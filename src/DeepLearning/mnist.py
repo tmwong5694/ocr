@@ -119,19 +119,20 @@ def validate():
 import torch._dynamo
 torch._dynamo.config.suppress_errors = True
 
-epochs = 10
+if __name__ == '__main__':
+    epochs = 10
 
-for epoch in range(epochs):
-    print('Epoch: {}'.format(epoch))
-    train()
-    validate()
+    for epoch in range(epochs):
+        print('Epoch: {}'.format(epoch))
+        train()
+        validate()
 
-# Original: prediction = model(x_0_gpu)
-prediction = model(x_0_gpu)
+    # Original: prediction = model(x_0_gpu)
+    prediction = model(x_0_gpu)
 
 
-print(f"Prediction: {prediction.argmax(dim=1, keepdim=True)}")
+    print(f"Prediction: {prediction.argmax(dim=1, keepdim=True)}")
 
-print(y_0)
+    print(y_0)
 
 pass
