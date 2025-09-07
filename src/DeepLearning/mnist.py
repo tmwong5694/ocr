@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 device = torch.device("cuda" if torch.cuda.is_available() else "mps")
 
 trans = v2.Compose([
+    # v2.ToTensor() is deprecated
     v2.ToImage(),
     v2.ToDtype(torch.float32, scale=True)
 ])
