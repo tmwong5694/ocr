@@ -6,10 +6,13 @@ from torch.optim import Adam
 from torchvision import datasets
 from torchvision.transforms import v2
 import torchvision.transforms.functional as F
-
 import matplotlib.pyplot as plt
 
+import torch._dynamo
+# Suppress compilation error
+torch._dynamo.config.suppress_errors = True
 
+# Set "mps" as the accelerator
 device = torch.device("cuda" if torch.cuda.is_available() else "mps")
 
 def get_batch_accuracy(output, y, N):
@@ -24,9 +27,11 @@ def train():
     model.train()
     for x, y in train_loader:
         x, y = x.to(device), y.to(device)
+        # Output with a class of (batch_size, num_classes)
         output = model(x)
         optimizer.zero_grad()
         batch_loss = loss_function(output, y)
+        # Backpropogation to calculate weight
         batch_loss.backward()
         optimizer.step()
 
@@ -106,7 +111,7 @@ layers = [
 model = nn.Sequential(*layers)
 model.to(device)
 
-
+# Compilation error is suppressed
 model = torch.compile(model)
 
 loss_function = nn.CrossEntropyLoss()
@@ -117,8 +122,6 @@ train_N = len(train_loader.dataset)
 valid_N = len(valid_loader.dataset)
 
 
-import torch._dynamo
-torch._dynamo.config.suppress_errors = True
 
 if __name__ == '__main__':
     epochs = 10
