@@ -5,7 +5,8 @@ import torchvision.datasets as datasets
 from torch.utils.data import DataLoader
 import torch.nn as nn
 
-model = models.resnet18(pretrained=True)
+weights = models.ResNet18_Weights.DEFAULT
+model = models.resnet18(weights=weights)
 
 num_ftrs = model.fc.in_features
 model.fc = nn.Linear(num_ftrs, 10)
@@ -20,7 +21,6 @@ transform = v2.Compose([
 # Load dataset
 train_dataset = datasets.CIFAR10(root='./data', train=True, transform=transform, download=True)
 test_dataset = datasets.CIFAR10(root='./data', train=False, transform=transform, download=True)
-
 
 # Create data loaders
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
