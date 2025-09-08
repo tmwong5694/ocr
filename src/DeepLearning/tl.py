@@ -36,7 +36,7 @@ image_datasets = {x:datasets.ImageFolder(os.path.join(data_dir, x), data_transfo
 dataloaders = {x: DataLoader(image_datasets[x], batch_size=4, shuffle=True, num_workers=4)
                for x in["train", "val"]}
 
-data_sizes = {x: len(image_datasets[x]) for x in ["train", "val"]}
+dataset_sizes = {x: len(image_datasets[x]) for x in ["train", "val"]}
 class_names = image_datasets["train"].classes
 
 device = torch.device("mps")
@@ -64,7 +64,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
         torch.save(model.state_dict(), best_model_params_path)
         best_acc = 0.0
 
-        for epoch in range(num_epoch):
+        for epoch in range(num_epochs):
             print(f'Epoch {epoch}/{num_epochs - 1}')
             print('-' * 10)
 
@@ -119,7 +119,6 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
         # load best model weights
         model.load_state_dict(torch.load(best_model_params_path, weights_only=True))
     return model
-
 
 
 if __name__ == "__main__":
