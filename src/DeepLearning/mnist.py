@@ -112,7 +112,7 @@ model = nn.Sequential(*layers)
 model.to(device)
 
 # Compilation error is suppressed
-model = torch.compile(model)
+# model = torch.compile(model)
 
 loss_function = nn.CrossEntropyLoss()
 optimizer = Adam(model.parameters())
