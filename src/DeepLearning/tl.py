@@ -1,4 +1,4 @@
-import torch
+from torch import Tensor
 import torchvision.models as models
 from torch import Tensor
 from torchvision.transforms import v2
@@ -33,18 +33,24 @@ train_dataset = datasets.CIFAR10(root='./data', train=True, transform=transform,
 test_dataset = datasets.CIFAR10(root='./data', train=False, transform=transform, download=True)
 
 # Create data loaders
+# Optimal batch size for stable gradient descent
 batch_size = 32
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+# Get the length of dataset for calculation of accuracy
+train_N, test_N = len(train_dataset), len(test_dataset)
 
-train_N = len(train_loader.dataset)
-test_N = len(test_loader.dataset)
-
+# Define crtierion of cross entropy loss
 criterion = nn.CrossEntropyLoss()
+# Use Adam as optimizer and learning rate of 0.001
 optimizer = optim.Adam(model.fc.parameters(), lr=0.001)
 
 def get_batch_accuracy(outputs: Tensor, labels: Tensor, total_num: int) -> float:
+    """Take predictions and labels in batch to calculate accuracy per batch"""
+    # No. of columns refer to the no. of classes
+    # The predicted class will have the highest probability across columns
     pred = outputs.argmax(dim=1, keepdim=True)
+    # Pairwise comparison of predictions and labels, return true if prediction is correct
     correct = pred.eq(labels.view_as(pred)).sum().item()
     return correct / total_num
 
@@ -58,12 +64,14 @@ def train_model(model, train_loader, criterion, optimizer, epochs=5):
         for batch, (inputs, labels) in enumerate(train_loader):
             print(f"Batch: {batch + 1}/{len(train_loader)}")
             inputs, labels = inputs.to(device), labels.to(device)
-            
+
+            #
             optimizer.zero_grad()
             # Predict output class using input
             outputs = model(inputs)
             # Calculate the loss
             loss = criterion(outputs, labels)
+            # Back propagation
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
