@@ -55,14 +55,13 @@ def get_batch_accuracy(outputs: Tensor, labels: Tensor, total_num: int) -> float
     return correct / total_num
 
 @timeit
-def train_model(model, train_loader, criterion, optimizer, epochs=5):
+def train_model(model, train_loader, criterion, optimizer, epochs: int=5):
     model.train()
     for epoch in range(epochs):
         print(f"Epoch: {epoch + 1}/{epochs}")
-        running_loss = 0
-        accuracy = 0
-        for batch, (inputs, labels) in enumerate(train_loader):
-            print(f"Batch: {batch + 1}/{len(train_loader)}")
+        running_loss, accuracy = 0, 0
+        for batch_index, (inputs, labels) in enumerate(train_loader):
+            print(f"Batch: {batch_index + 1}/{train_N}")
             inputs, labels = inputs.to(device), labels.to(device)
 
             #
@@ -79,12 +78,35 @@ def train_model(model, train_loader, criterion, optimizer, epochs=5):
     print('Train - Loss: {:.4f} Accuracy: {:.4f}'.format(loss, accuracy))
     return model
 
+@timeit
+def test_model(model, test_loader, criterion, optimizer, epochs: int=5):
+    """"""
+    model.eval()
+    with torch.no_grad():
+        for epoch in range(epochs):
+            print(f"Epoch: {epoch + 1}/{epochs}")
+            running_loss, accuracy = 0, 0
+            for batch_index, (inputs, labels) in enumerate(test_loader):
+                print(f"Batch: {batch_index + 1}/{test_N}")
+                # Move to device
+                inputs, labels = inputs.to(device), labels.to(device)
+
+                outputs = model(inputs)
+                loss = criterion(outputs, labels)
+
+                running_loss += loss.item()
+                accuracy += get_batch_accuracy(outputs=outputs, labels=labels, total_num=test_N)
+    print("Test - Loss: {:.4f} Accuracy: {:.4f}".format(loss, accuracy))
+
+
+
+
 if __name__ == "__main__":
 
     model.to(device)
     # model = torch.compile(model)
     train_model(model=model, train_loader=train_loader, criterion=criterion, optimizer=optimizer)
-
+    # test_model()
 
 
     pass
