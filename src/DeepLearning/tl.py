@@ -8,9 +8,9 @@ import torch.optim as optim
 import torch.nn as nn
 from src.DeepLearning.time_utils import timeit
 
-import torch._dynamo
-# Suppress errors during compilation
-torch._dynamo.config.suppress_errors = True
+# import torch._dynamo
+# # Suppress errors during compilation
+# torch._dynamo.config.suppress_errors = True
 
 # Set "mps" as the accelerator
 device = torch.device("mps")
