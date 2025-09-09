@@ -1,3 +1,4 @@
+import torch
 from torch import Tensor
 import torchvision.models as models
 from torchvision.transforms import v2
@@ -8,14 +9,14 @@ import torch.nn as nn
 from src.DeepLearning.time_utils import timeit
 
 import torch._dynamo
+# Suppress errors during compilation
+torch._dynamo.config.suppress_errors = True
 
 # Set "mps" as the accelerator
 device = torch.device("mps")
 
 weights = models.ResNet18_Weights.DEFAULT
 model = models.resnet18(weights=weights)
-# Suppress errors during compilation
-torch._dynamo.config.suppress_errors = True
 
 num_ftrs = model.fc.in_features
 model.fc = nn.Linear(num_ftrs, 10)
