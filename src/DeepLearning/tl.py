@@ -1,10 +1,12 @@
 import torch
 import torchvision.models as models
+from torch import Tensor
 from torchvision.transforms import v2
 import torchvision.datasets as datasets
 from torch.utils.data import DataLoader
 import torch.optim as optim
 import torch.nn as nn
+from src.DeepLearning.time_utils import timeit
 
 import torch._dynamo
 
@@ -31,17 +33,30 @@ train_dataset = datasets.CIFAR10(root='./data', train=True, transform=transform,
 test_dataset = datasets.CIFAR10(root='./data', train=False, transform=transform, download=True)
 
 # Create data loaders
-train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+batch_size = 32
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+
+train_N = len(train_loader.dataset)
+test_N = len(test_loader.dataset)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.fc.parameters(), lr=0.001)
 
+def get_batch_accuracy(outputs: Tensor, labels: Tensor, total_num: int) -> float:
+    pred = outputs.argmax(dim=1, keepdim=True)
+    correct = pred.eq(labels.view_as(pred)).sum().item()
+    return correct / total_num
+
+@timeit
 def train_model(model, train_loader, criterion, optimizer, epochs=5):
     model.train()
     for epoch in range(epochs):
+        print(f"Epoch: {epoch + 1}/{epochs}")
         running_loss = 0
-        for inputs, labels in train_loader:
+        accuracy = 0
+        for batch, (inputs, labels) in enumerate(train_loader):
+            print(f"Batch: {batch + 1}/{len(train_loader)}")
             inputs, labels = inputs.to(device), labels.to(device)
             
             optimizer.zero_grad()
@@ -52,6 +67,8 @@ def train_model(model, train_loader, criterion, optimizer, epochs=5):
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
+            accuracy += get_batch_accuracy(outputs=outputs, labels=labels, total_num=train_N)
+    print('Train - Loss: {:.4f} Accuracy: {:.4f}'.format(loss, accuracy))
     return model
 
 if __name__ == "__main__":
