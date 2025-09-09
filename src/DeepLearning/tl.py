@@ -1,6 +1,5 @@
 from torch import Tensor
 import torchvision.models as models
-from torch import Tensor
 from torchvision.transforms import v2
 import torchvision.datasets as datasets
 from torch.utils.data import DataLoader
