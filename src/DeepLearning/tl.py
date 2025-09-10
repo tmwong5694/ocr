@@ -61,7 +61,7 @@ def train_model(model, train_loader, criterion, optimizer, epochs: int=5):
         print(f"Epoch: {epoch + 1}/{epochs}")
         running_loss, accuracy = 0, 0
         for batch_index, (inputs, labels) in enumerate(train_loader):
-            print(f"Batch: {batch_index + 1}/{train_N}")
+            print(f"Batch: {batch_index + 1}/{len(train_loader)}")
             inputs, labels = inputs.to(device), labels.to(device)
 
             #
@@ -87,7 +87,7 @@ def test_model(model, test_loader, criterion, optimizer, epochs: int=5):
             print(f"Epoch: {epoch + 1}/{epochs}")
             running_loss, accuracy = 0, 0
             for batch_index, (inputs, labels) in enumerate(test_loader):
-                print(f"Batch: {batch_index + 1}/{test_N}")
+                print(f"Batch: {batch_index + 1}/{len(test_loader)}")
                 # Move to device
                 inputs, labels = inputs.to(device), labels.to(device)
 
@@ -106,7 +106,7 @@ if __name__ == "__main__":
     model.to(device)
     # model = torch.compile(model)
     train_model(model=model, train_loader=train_loader, criterion=criterion, optimizer=optimizer)
-    # test_model()
+    test_model(model=model, test_loader=test_loader, criterion=criterion, optimizer=optimizer)
 
 
     pass
