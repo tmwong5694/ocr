@@ -13,7 +13,7 @@ class TransferResNet(nn.Module):
 
         # Get the number of input features for the final fully connected layer
         num_ftrs = self.model.fc.in_features
-
+        # model.fc is the final fully_connected layer
         self.model.fc = nn.Linear(num_ftrs, num_classes)
 
     def forward(self, x):
