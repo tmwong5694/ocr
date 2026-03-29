@@ -33,10 +33,6 @@ def get_dataloaders(data_dir="./data", batch_size=64, split_ratios=[0.8, 0.1, 0.
     #     num_workers = min(4, os.cpu_count() or 1)
     #     print(f"Auto-configured DataLoaders to use {num_workers} worker processes.")
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
-
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
