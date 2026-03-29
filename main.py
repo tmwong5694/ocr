@@ -3,6 +3,7 @@ import yaml
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from pathlib import Path
 
 from src.data.dataset import get_dataloaders
 from src.models.resnet import TransferResNet
@@ -48,6 +49,8 @@ def main(config_path):
     optimizer = optim.Adam(trainable_params, lr=cfg['learning_rate'])
 
     # 5. Execute Training Engine
+    save_dir = Path(cfg['save_path']).parent
+    save_dir.mkdir(parents=True, exist_ok=True)
     print("Starting training engine...")
     trained_model, history = train_model(
         model=model,
