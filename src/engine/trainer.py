@@ -57,8 +57,8 @@ def train_model(
             if (batch_idx + 1) % 10 == 0:
                 print(f"  Train Batch {batch_idx + 1}/{len(train_loader)} | Loss: {loss.item():.4f}")
 
-            epoch_train_loss = running_train_loss / len(train_loader.dataset)
-            epoch_train_acc = correct_train / total_train
+        epoch_train_loss = running_train_loss / len(train_loader.dataset)
+        epoch_train_acc = correct_train / total_train
 
 
 
@@ -83,22 +83,24 @@ def train_model(
                 predicted = outputs.argmax(dim=1)
                 correct_val += (predicted == labels.view_as(predicted)).sum().item()
 
-                epoch_val_loss = running_val_loss / len(val_loader.dataset)
-                epoch_val_acc = correct_val / total_val
+        epoch_val_loss = running_val_loss / len(val_loader.dataset)
+        epoch_val_acc = correct_val / total_val
 
-            print(f"Train Loss: {epoch_train_loss:.4f} | Train Acc: {epoch_train_acc:.4f}")
-            print(f"Val Loss:   {epoch_val_loss:.4f} | Val Acc:   {epoch_val_acc:.4f}")
 
-            history['train_loss'].append(epoch_train_loss)
-            history['train_acc'].append(epoch_train_acc)
-            history['val_loss'].append(epoch_val_loss)
-            history['val_acc'].append(epoch_val_acc)
 
-            # Save the model if validation loss decreased
-            if epoch_val_loss < best_val_loss:
-                print(f"*** Validation loss decreased ({best_val_loss:.4f} --> {epoch_val_loss:.4f}). Saving model... ***")
-                best_val_loss = epoch_val_loss
-                torch.save(model.state_dict(), save_path)
+        print(f"Train Loss: {epoch_train_loss:.4f} | Train Acc: {epoch_train_acc:.4f}")
+        print(f"Val Loss:   {epoch_val_loss:.4f} | Val Acc:   {epoch_val_acc:.4f}")
+
+        history['train_loss'].append(epoch_train_loss)
+        history['train_acc'].append(epoch_train_acc)
+        history['val_loss'].append(epoch_val_loss)
+        history['val_acc'].append(epoch_val_acc)
+
+        # Save the model if validation loss decreased
+        if epoch_val_loss < best_val_loss:
+            print(f"*** Validation loss decreased ({best_val_loss:.4f} --> {epoch_val_loss:.4f}). Saving model... ***")
+            best_val_loss = epoch_val_loss
+            torch.save(model.state_dict(), save_path)
 
     # Calculate elapsed time using perf_counter
     time_elapsed = time.perf_counter() - start_time
