@@ -4,6 +4,8 @@ import torch.nn as nn
 from pathlib import Path
 from torch.utils.data import DataLoader
 
+from src.utils.metrics import get_batch_accuracy
+
 def train_model(
     model: nn.Module,
     train_loader: DataLoader,
@@ -35,6 +37,7 @@ def train_model(
 
         for batch_idx, (inputs, labels) in enumerate(train_loader):
             inputs, labels = inputs.to(device), labels.to(device)
+            num_samples = labels.size(0)
 
             # Reset the parameters gradient o prevent accumulation
             optimizer.zero_grad()
@@ -48,11 +51,11 @@ def train_model(
             optimizer.step()
 
             # Statistics
-            running_train_loss += loss.item() * inputs.size(0)
-            total_train += labels.size(0)
+            running_train_loss += loss.item() * num_samples
+            total_train += num_samples
 
-            predicted = outputs.argmax(dim=1)
-            correct_train += (predicted == labels.view_as(predicted)).sum().item()
+            batch_acc = get_batch_accuracy(outputs, labels, num_samples)
+            correct_train += batch_acc * num_samples
 
             if (batch_idx + 1) % 10 == 0:
                 print(f"  Train Batch {batch_idx + 1}/{len(train_loader)} | Loss: {loss.item():.4f}")
@@ -72,16 +75,17 @@ def train_model(
         with torch.no_grad():
             for batch_idx, (inputs, labels) in enumerate(val_loader):
                 inputs, labels = inputs.to(device), labels.to(device)
+                num_samples = labels.size(0)
 
                 outputs = model(inputs)
                 loss = criterion(outputs, labels)
 
-                running_val_loss += loss.item() * inputs.size(0)
-                total_val += labels.size(0)
+                running_val_loss += loss.item() * num_samples
+                total_val += num_samples
 
                 # Robust, Pythonic accuracy calculation
-                predicted = outputs.argmax(dim=1)
-                correct_val += (predicted == labels.view_as(predicted)).sum().item()
+                batch_acc = get_batch_accuracy(outputs, labels, num_samples)
+                correct_val += batch_acc * num_samples
 
         epoch_val_loss = running_val_loss / len(val_loader.dataset)
         epoch_val_acc = correct_val / total_val
