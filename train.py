@@ -14,25 +14,17 @@ transform = transforms.Compose([
 # ImageFolder automatically assigns labels based on the folder names (Cat/Dog)
 full_dataset = datasets.ImageFolder(root="./data", transform=transform)
 
-train_size = int(0.8 * len(full_dataset))
-test_size = len(full_dataset) - train_size
-
 generator = torch.Generator().manual_seed(42)
-train_dataset, test_dataset = random_split(
+train_dataset, val_dataset, test_dataset = random_split(
     dataset=full_dataset,
-    lengths=[train_size, test_size],
+    lengths=[0.8, 0.1, 0.1],
     generator=generator
 )
 
-train_loader = DataLoader(
-    dataset=train_dataset,
-    batch_size=32,
-    shuffle=True,
-)
-test_loader = DataLoader(
-dataset=test_dataset,
-    batch_size=32,
-    shuffle=False,
-)
+train_loader = DataLoader(dataset=train_dataset, batch_size=32, shuffle=True)
+val_loader = DataLoader(dataset=val_dataset, batch_size=32, shuffle=False)
+test_loader = DataLoader(dataset=test_dataset, batch_size=32, shuffle=False)
+
+
 
 pass
