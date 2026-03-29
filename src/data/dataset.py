@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader, random_split, Subset
 from torchvision import datasets
 from src.data.transforms import get_transforms
 
-def get_dataloaders(data_dir="./data", batch_size=64, split_ratios=[0.8, 0.1, 0.1], seed=42, num_workers=None):
+def get_dataloaders(data_dir="./data", batch_size=64, split_ratios=[0.8, 0.1, 0.1], seed=42, num_workers=0):
     transforms_dict = get_transforms()
     train_transform = transforms_dict['train']
     eval_transform = transforms_dict['eval']
