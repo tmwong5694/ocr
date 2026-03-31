@@ -1,13 +1,13 @@
 import argparse
 import yaml
-import torch
 import torch.nn as nn
 import torch.optim as optim
 from pathlib import Path
 
 from src.data.dataset import get_dataloaders
-from src.models.resnet import TransferResNet
 from src.engine.trainer import train_model
+from src.models.resnet import TransferResNet
+from src.utils.device import DEVICE
 
 
 def load_config(config_path):
@@ -20,14 +20,7 @@ def main(config_path):
     # 1. Setup Environment
     cfg = load_config(config_path)
 
-    if torch.backends.mps.is_available():
-        device = torch.device("mps")
-    elif torch.cuda.is_available():
-        device = torch.device("cuda")
-    else:
-        device = torch.device("cpu")
-
-    print(f"--- PyTorch Image Classification ---\nUsing device: {device}")
+    print(f"--- PyTorch Image Classification ---\nUsing device: {DEVICE}")
 
     # 2. Data Pipeline
     print("Loading datasets...")
@@ -59,7 +52,7 @@ def main(config_path):
         criterion=criterion,
         optimizer=optimizer,
         num_epochs=cfg['num_epochs'],
-        device=device,
+        device=DEVICE,
         save_path=cfg['save_path']
     )
 
