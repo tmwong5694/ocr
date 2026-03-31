@@ -23,23 +23,20 @@ def predict_image(
     if not image_path.exists(): raise FileNotFoundError("Image does not exist")
     if not weights_path.exists(): raise FileNotFoundError("Weights does not exist")
 
-    # 1. Initialize model
     model = TransferResNet(num_classes=len(class_names), freeze=True)
 
-    # 2. Securely load weights and explicitly map to the provided device
-    # weights_only=True is a modern PyTorch best practice to prevent arbitrary code execution
+    # # Load the pretrained weights
     state_dict = torch.load(weights_path, map_location=device, weights_only=True)
     model.load_state_dict(state_dict)
 
-    # 3. Prepare for inference
     model.to(device)
     model.eval()
 
-    # 4. Prepare image using the exact same transforms used during evaluation
+    # Get eval transformation
     eval_transform = get_transforms()['eval']
 
     try:
-        # Convert to RGB to guarantee 3 channels (handles grayscale/RGBA gracefully)
+        # Convert to RGB to guarantee 3 channels
         img = Image.open(image_path).convert('RGB')
     except FileNotFoundError:
         raise FileNotFoundError(f"Image at '{image_path}' does not exist")
@@ -49,12 +46,14 @@ def predict_image(
     # Transform and add batch dimension: [C, H, W] -> [1, C, H, W]
     input_tensor = eval_transform(img).unsqueeze(0).to(device)
 
-    # 5. Run inference without tracking gradients to save memory and speed up compute
     with torch.no_grad():
         outputs = model(input_tensor)
+        # Softmax for multiclass classification
         probabilities = F.softmax(outputs[0], dim=0)
+        # Max probability, index of max probability
         confidence, predicted_idx = torch.max(probabilities, dim=0)
 
+    # Get the class prediction and convert score to %
     predicted_class = class_names[predicted_idx.item()]
     confidence_score = confidence.item() * 100.0
 
