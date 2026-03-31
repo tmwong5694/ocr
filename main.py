@@ -72,7 +72,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config",
         type=str,
-        default=".config/train_config.yaml",
+        default=Path(".config") / "train_config.yaml",
         help="Path to the YAML configuration file"
     )
 
