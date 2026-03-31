@@ -10,14 +10,16 @@ from src.models.resnet import TransferResNet
 from src.engine.trainer import train_model
 
 
-def load_config(config_path):
+def load_config(config_path) -> dict:
     """Safely loads the YAML configuration file."""
     with open(config_path, "r") as file:
         return yaml.safe_load(file)
 
 
-def main(config_path):
+def main(config_path: Path | str) -> None:
     # 1. Setup Environment
+    config_path = Path(config_path)
+    if not config_path.is_file(): raise FileNotFoundError(f"config file '{config_path}' does not exist")
     cfg = load_config(config_path)
 
     if torch.backends.mps.is_available():
@@ -72,7 +74,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config",
         type=str,
-        default=Path(".config") / "train_config.yaml",
+        default=Path(".confi") / "train_config.yaml",
         help="Path to the YAML configuration file"
     )
 
