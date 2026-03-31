@@ -23,13 +23,13 @@ def main(config_path: Path | str) -> None:
     cfg = load_config(config_path)
 
     if torch.backends.mps.is_available():
-        device = torch.device("mps")
+        DEVICE = torch.device("mps")
     elif torch.cuda.is_available():
-        device = torch.device("cuda")
+        DEVICE = torch.device("cuda")
     else:
-        device = torch.device("cpu")
+        DEVICE = torch.device("cpu")
 
-    print(f"--- PyTorch Image Classification ---\nUsing device: {device}")
+    print(f"--- PyTorch Image Classification ---\nUsing device: {DEVICE}")
 
     # 2. Data Pipeline
     print("Loading datasets...")
@@ -61,7 +61,7 @@ def main(config_path: Path | str) -> None:
         criterion=criterion,
         optimizer=optimizer,
         num_epochs=cfg['num_epochs'],
-        device=device,
+        device=DEVICE,
         save_path=cfg['save_path']
     )
 
