@@ -8,11 +8,12 @@ def plot_loss(
         xlabel: str = "Epochs",
         ylabel: str = "Loss"
 ) -> None:
-    plt.figure(figsize=(8, 6))
+    
+    plt.figure(figsize=figsize)
     plt.plot(train_loss, label='Train Loss')
     plt.plot(val_loss, label='Val Loss')
-    plt.title('Loss vs. Epochs')
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
     plt.legend()
     plt.show() 
