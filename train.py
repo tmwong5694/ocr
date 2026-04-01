@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import yaml
+from datetime import date
 from pathlib import Path
 
 from src.data.dataset import get_dataloaders
@@ -66,7 +67,8 @@ def main(config_path: Path | str) -> None:
         save_path=cfg['save_path']
     )
 
-    plot_loss(train_loss=history['train_loss'], val_loss=history["val_loss"])
+    image_path = Path("outputs") / "plots" / f"loss_resnet18_epoch{cfg['num_epochs']}_{date.today():%Y.%m.%d}.jpeg"
+    plot_loss(train_loss=history['train_loss'], val_loss=history["val_loss"], save_path=image_path)
 
     print(f"\nPipeline complete! Weights saved in '{cfg['save_path']}'.")
 

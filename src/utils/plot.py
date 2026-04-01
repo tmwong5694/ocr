@@ -1,3 +1,4 @@
+from pathlib import Path
 import matplotlib.pyplot as plt
 
 def plot_loss(
@@ -6,7 +7,8 @@ def plot_loss(
         figsize: tuple = (8, 6),
         title: str = "Loss vs Epochs",
         xlabel: str = "Epochs",
-        ylabel: str = "Loss"
+        ylabel: str = "Loss",
+        save_path: str | Path | None = None
 ) -> None:
     
     plt.figure(figsize=figsize)
@@ -16,4 +18,9 @@ def plot_loss(
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.legend()
-    plt.show() 
+    plt.show()
+
+    if save_path:
+        save_path = Path(save_path)
+        if not save_path.parent.exists(): save_path.parent.mkdir(parents=True, exist_ok=False)
+        plt.savefig(save_path)
