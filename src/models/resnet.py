@@ -16,8 +16,14 @@ class TransferResNet(nn.Module):
         # model.fc is the final fully_connected layer
         self.model.fc = nn.Linear(num_ftrs, num_classes)
 
+        # Remove the final layer to get embeddings
+        self.feature_extractor = nn.Sequential(*list(self.model.children())[:-1])
+
     def forward(self, x):
         return self.model(x)
+    
+    def get_embedding(self, x):
+        return self.feature_extractor(x).squeeze()
 
 
 if __name__ == "__main__":
@@ -31,3 +37,6 @@ if __name__ == "__main__":
     dummy_input = torch.randn(1, 3, 224, 224)
     output = model(dummy_input)
     print(f"Output shape: {output.shape}")  # Should be [1, 2]
+
+    embedding = model.get_embedding(dummy_input)
+    print(f"Embedding shape: {embedding}")
