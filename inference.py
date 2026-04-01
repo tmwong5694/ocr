@@ -12,10 +12,10 @@ DEFAULT_CLASSES = ['Cat', 'Dog']
 
 
 def predict_image(
-    image_path: Path | str,
-    weights_path: Path | str,
-    device: torch.device,
-    class_names: list[str]
+        image_path: Path | str,
+        weights_path: Path | str,
+        device: torch.device,
+        class_names: list[str]
 ):
     image_path = Path(image_path)
     weights_path = Path(weights_path)
