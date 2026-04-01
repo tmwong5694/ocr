@@ -1,8 +1,8 @@
 import argparse
-import yaml
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import yaml
 from pathlib import Path
 
 from src.data.dataset import get_dataloaders
@@ -65,6 +65,7 @@ def main(config_path: Path | str) -> None:
         save_path=cfg['save_path']
     )
 
+
     print(f"\nPipeline complete! Weights saved in '{cfg['save_path']}'.")
 
 
@@ -74,7 +75,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--config",
         type=str,
-        default=Path(".confi") / "train_config.yaml",
+        default=Path(".config") / "train_config.yaml",
         help="Path to the YAML configuration file"
     )
 
