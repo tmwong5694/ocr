@@ -6,8 +6,9 @@ import yaml
 from pathlib import Path
 
 from src.data.dataset import get_dataloaders
+from src.engine.trainer import train_model 
 from src.models.resnet import TransferResNet
-from src.engine.trainer import train_model
+from src.utils.plot import plot_loss
 
 
 def load_config(config_path) -> dict:
@@ -65,6 +66,7 @@ def main(config_path: Path | str) -> None:
         save_path=cfg['save_path']
     )
 
+    plot_loss(train_loss=history['train_loss'], val_loss=history["val_loss"])
 
     print(f"\nPipeline complete! Weights saved in '{cfg['save_path']}'.")
 
