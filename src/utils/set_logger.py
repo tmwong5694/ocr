@@ -38,6 +38,6 @@ def set_logger(name: str, level: str, logger_path: str | Path) -> logging.Logger
 
 if __name__ == "__main__":
 
-    logg = set_logger(__name__, "info", logger_path=Path("logs") / "testing.log")
-    logg.info("Set up success!")
+    logger = set_logger(__name__, "info", logger_path=Path("logs") / "testing.log")
+    logger.info("Set up success!")
     pass
