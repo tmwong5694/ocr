@@ -7,14 +7,14 @@ from torch.utils.data import DataLoader
 from src.utils.metrics import get_batch_accuracy
 
 def train_model(
-    model: nn.Module,
-    train_loader: DataLoader,
-    val_loader: DataLoader,
-    criterion,
-    optimizer: torch.optim.Optimizer,
-    num_epochs: int,
-    device: torch.device,
-    save_path: Path = "best_model.pth"
+        model: nn.Module,
+        train_loader: DataLoader,
+        val_loader: DataLoader,
+        criterion,
+        optimizer: torch.optim.Optimizer,
+        num_epochs: int,
+        device: torch.device,
+        save_path: Path = "best_model.pth"
 ):
 
     model = model.to(device)
