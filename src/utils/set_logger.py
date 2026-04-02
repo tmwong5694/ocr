@@ -33,6 +33,7 @@ def set_logger(name: str, level: str, logger_path: str | Path) -> logging.Logger
     logger.addHandler(file_handler)
 
     console_handler.setFormatter(formatter)
+    file_handler.setFormatter(formatter)
 
     return logger
 
