@@ -1,4 +1,5 @@
 import argparse
+import logging
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -10,7 +11,12 @@ from src.data.dataset import get_dataloaders
 from src.engine.trainer import train_model 
 from src.models.resnet import TransferResNet
 from src.utils.plot import plot_loss
+from src.utils.set_logger import set_logger
 
+
+log_path = Path("logs") / "resnet_training.log"
+set_logger(name="", level="info", logger_path=log_path)
+logger = logging.getLogger(__name__)
 
 def load_config(config_path) -> dict:
     """Safely loads the YAML configuration file."""
@@ -31,20 +37,20 @@ def main(config_path: Path | str) -> None:
     else:
         DEVICE = torch.device("cpu")
 
-    print(f"--- PyTorch Image Classification ---\nUsing device: {DEVICE}")
+    logger.info(f"--- PyTorch Image Classification ---\nUsing device: {DEVICE}")
 
     # 2. Data Pipeline
-    print("Loading datasets...")
+    logger.info("Loading datasets...")
     train_loader, val_loader, test_loader = get_dataloaders(
         data_dir=cfg['data_dir'],
         batch_size=cfg['batch_size'],
         seed=cfg['seed'],
         num_workers=cfg['num_workers']
     )
-    print(f"Train: {len(train_loader)} | Val: {len(val_loader)} | Test: {len(test_loader)}")
+    logger.info(f"Train: {len(train_loader)} | Val: {len(val_loader)} | Test: {len(test_loader)}")
 
     # 3. Model Initialization
-    print("\nInitializing ResNet18...")
+    logger.info("\nInitializing ResNet18...")
     model = TransferResNet(num_classes=cfg['num_classes'], freeze=cfg['freeze'])
 
     # 4. Training Components
@@ -55,7 +61,7 @@ def main(config_path: Path | str) -> None:
     # 5. Execute Training Engine
     save_dir = Path(cfg['save_path']).parent
     save_dir.mkdir(parents=True, exist_ok=True)
-    print("Starting training engine...")
+    logger.info("Starting training engine...")
     trained_model, history = train_model(
         model=model,
         train_loader=train_loader,
@@ -70,7 +76,7 @@ def main(config_path: Path | str) -> None:
     image_path = Path("outputs") / "plots" / f"loss_resnet18_epoch{cfg['num_epochs']}_{date.today():%Y.%m.%d}.jpeg"
     plot_loss(train_loss=history['train_loss'], val_loss=history["val_loss"], save_path=image_path)
 
-    print(f"\nPipeline complete! Weights saved in '{cfg['save_path']}'.")
+    logger.info(f"\nPipeline complete! Weights saved in '{cfg['save_path']}'.")
 
 
 if __name__ == "__main__":
