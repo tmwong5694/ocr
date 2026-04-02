@@ -20,8 +20,10 @@ def predict_image(
     image_path = Path(image_path)
     weights_path = Path(weights_path)
 
-    if not image_path.exists(): raise FileNotFoundError("Image does not exist")
-    if not weights_path.exists(): raise FileNotFoundError("Weights does not exist")
+    if not image_path.exists():
+        raise FileNotFoundError("Image does not exist")
+    if not weights_path.exists():
+        raise FileNotFoundError("Weights does not exist")
 
     model = TransferResNet(num_classes=len(class_names), freeze=True)
 
