@@ -1,10 +1,19 @@
 import logging
 from pathlib import Path
 
-def set_logger(name: str, level: int, logger_path: str | Path) -> logging.Logger:
+def set_logger(name: str, level: str, logger_path: str | Path) -> logging.Logger:
 
     logger = logging.getLogger(name)
-    logger.setLevel(level)
+
+    logging_levels = {
+        "debug": logging.DEBUG,
+        "info": logging.INFO,
+        "warn": logging.WARN,
+        "error": logging.ERROR,
+        "critical": logging.CRITICAL
+    }
+
+    logger.setLevel(logging_levels[level])
 
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(funcName)s() - %(message)s',
@@ -26,6 +35,6 @@ def set_logger(name: str, level: int, logger_path: str | Path) -> logging.Logger
 
 if __name__ == "__main__":
 
-    logg = set_logger(__name__, logging.INFO, logger_path=Path("logs") / "testing.log")
-    logg.INFO("Set up success!")
+    logg = set_logger(__name__, "info", logger_path=Path("logs") / "testing.log")
+    logg.debug("Set up success!")
     pass
