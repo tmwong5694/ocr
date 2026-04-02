@@ -22,6 +22,7 @@ def set_logger(name: str, level: str, logger_path: str | Path) -> logging.Logger
     )
 
     console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.DEBUG)
 
     logger_path = Path(logger_path)
     if not logger_path.parent.exists():
