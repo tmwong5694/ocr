@@ -1,68 +1,28 @@
-import logging
 import sys
-from logging.handlers import TimedRotatingFileHandler
+from loguru import logger
 from pathlib import Path
 from tqdm import tqdm
 
 
-class TqdmLoggingHandler(logging.Handler):
-    def __init__(self, level=logging.NOTSET):
-        super().__init__(level)
+def set_loguru(level: str, logger_path: str | Path) -> None:
+    """Configures Loguru to work with tqdm and midnight file rotation."""
+    logger_path = Path(logger_path)
+    logger_path.parent.mkdir(exist_ok=True, parents=True)
 
-    def emit(self, record):
-        try:
-            msg = self.format(record)
-            tqdm.write(msg, file=sys.stderr)
-            self.flush()
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except Exception:
-            self.handleError(record)
+    # Remove default terminal output
+    logger.remove()
 
-
-def set_logger(name: str, level: str, logger_path: str | Path, use_tqdm_handler: bool = False) -> logging.Logger:
-
-    logger = logging.getLogger(name)
-
-    if logger.hasHandlers():
-        logger.handlers.clear()
-
-    logging_levels = {
-        "debug": logging.DEBUG,
-        "info": logging.INFO,
-        "warn": logging.WARN,
-        "error": logging.ERROR,
-        "critical": logging.CRITICAL
-    }
-
-    logger.setLevel(logging_levels[level])
-
-    formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)-8s - %(filename)s - %(funcName)s():%(lineno)d - %(message)s',
-        datefmt="%Y-%m-%d %H:%M:%S",
+    logger.add(
+        lambda msg: tqdm.write(msg, end=""), 
+        level=level.upper(), 
+        colorize=True,
+        format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:{line} - <level>{message}</level>"
     )
 
-    if use_tqdm_handler:
-        console_handler = TqdmLoggingHandler()
-    else:
-        console_handler = logging.StreamHandler()
-
-    console_handler.setLevel(logging_levels[level])
-    console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
-    
-    logger_path = Path(logger_path)
-    if not logger_path.parent.exists():
-        logger_path.parent.mkdir(exist_ok=True, parents=True)
-    file_handler = TimedRotatingFileHandler(logger_path, encoding="utf-8", when="midnight", interval=1)
-    file_handler.suffix = "%Y-%m-%d"
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)    
-
-    return logger
-
-if __name__ == "__main__":
-
-    logger = set_logger(__name__, "info", logger_path=Path("logs") / "testing.log")
-    logger.info("Set up success!")
-    pass
+    logger.add(
+        str(logger_path),
+        level=level.upper(),
+        rotation="00:00",      # Rotates at midnight automatically
+        retention="30 days",   # Automatically cleans up old logs
+        format="{time:YYYY-MM-DD HH:mm:ss} - {name} - {level: <8} - {file} - {function}():{line} - {message}"
+    )

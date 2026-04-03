@@ -1,5 +1,4 @@
 import argparse
-import logging
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -11,12 +10,12 @@ from src.data.dataset import get_dataloaders
 from src.engine.trainer import train_model 
 from src.models.resnet import TransferResNet
 from src.utils.plot import plot_loss
-from src.utils.set_logger import set_logger
+from loguru import logger 
+from src.utils.set_logger import set_loguru
 
 
 log_path = Path("logs") / "resnet_training.log"
-set_logger(name="", level="info", logger_path=log_path)
-logger = logging.getLogger(__name__)
+set_loguru(level="info", logger_path=log_path)
 
 def load_config(config_path) -> dict:
     """Safely loads the YAML configuration file."""

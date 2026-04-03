@@ -1,4 +1,3 @@
-import logging
 import time
 import torch
 import torch.nn as nn
@@ -7,9 +6,8 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from src.utils.metrics import get_batch_accuracy
-from src.utils.set_logger import set_logger
+from loguru import logger
 
-logger = logging.getLogger(__name__)
 
 def train_model(
         model: nn.Module,
