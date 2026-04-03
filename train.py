@@ -8,7 +8,8 @@ from pathlib import Path
 
 from src.data.dataset import get_dataloaders
 from src.engine.trainer import train_model 
-from src.models.resnet import TransferResNet
+from src.models.transfer_resnet import TransferResNet
+from src.models.cat_dog_classifier import CatDogClassifier
 from src.utils.plot import plot_loss
 from loguru import logger 
 from src.utils.set_logger import set_loguru
@@ -16,6 +17,19 @@ from src.utils.set_logger import set_loguru
 
 log_path = Path("logs") / "resnet_training.log"
 set_loguru(level="info", logger_path=log_path)
+
+
+def get_model(cfg: dict):
+    model_name = cfg['model']['name'].lower()
+    model_params = cfg['model']['params']
+    
+    if model_name == "transferresnet":
+        return TransferResNet(**model_params)
+    elif model_name == "catdogclassifier":
+        return CatDogClassifier(**model_params)
+    else:
+        raise ValueError(f"Model {model_name} is not supported!")
+
 
 def load_config(config_path) -> dict:
     """Safely loads the YAML configuration file."""
@@ -49,8 +63,8 @@ def main(config_path: Path | str) -> None:
     logger.info(f"Train: {len(train_loader)} | Val: {len(val_loader)} | Test: {len(test_loader)}")
 
     # 3. Model Initialization
-    logger.info("\nInitializing ResNet18...")
-    model = TransferResNet(num_classes=cfg['num_classes'], freeze=cfg['freeze'])
+    logger.info(f"Initializing {cfg['model']['name']}...")
+    model = get_model(cfg)
 
     # 4. Training Components
     criterion = nn.CrossEntropyLoss()
