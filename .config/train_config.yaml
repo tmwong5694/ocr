@@ -1,5 +1,12 @@
+model:
+#  name: "TransferResNet"
+  name: "catdogclassifier"
+  params:
+    num_classes: 2
+    freeze: true
+
 # Data settings
-data_dir: "./data"
+data_dir: "./data/images"
 batch_size: 64
 num_workers: 0
 seed: 42
