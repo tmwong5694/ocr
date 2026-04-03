@@ -22,6 +22,7 @@ def set_loguru(level: str, logger_path: str | Path) -> None:
     logger.add(
         str(logger_path),
         level=level.upper(),
+        colorize=True,
         rotation="00:00",      # Rotates at midnight automatically
         retention="30 days",   # Automatically cleans up old logs
         format="{time:YYYY-MM-DD HH:mm:ss} - {name} - {level: <8} - {file} - {function}():{line} - {message}"
