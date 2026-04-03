@@ -11,7 +11,7 @@ from src.models.resnet import TransferResNet
 DEFAULT_CLASSES = ['Cat', 'Dog']
 
 
-def predict_image(
+def infer_image(
         image_path: Path | str,
         weights_path: Path | str,
         device: torch.device,
@@ -20,9 +20,9 @@ def predict_image(
     image_path = Path(image_path)
     weights_path = Path(weights_path)
 
-    if not image_path.exists():
+    if not image_path.is_file():
         raise FileNotFoundError("Image does not exist")
-    if not weights_path.exists():
+    if not weights_path.is_file():
         raise FileNotFoundError("Weights does not exist")
 
     model = TransferResNet(num_classes=len(class_names), freeze=True)
@@ -62,8 +62,8 @@ def predict_image(
     return predicted_class, confidence_score
 
 
-def main():
 
+if __name__ == "__main__":
     if torch.backends.mps.is_available():
         DEVICE = torch.device("mps")
     elif torch.cuda.is_available():
@@ -71,14 +71,14 @@ def main():
     else:
         DEVICE = torch.device("cpu")
 
-    predicted_class, confidence = predict_image(
-        image_path="samples/mofusand.png",
-        weights_path="experiments/run_01/best_model.pth",
+    sample_folder = Path("samples")
+    weight = Path("experiments") / "run_01" / "best_model.pth"
+
+    predicted_class, confidence = infer_image(
+        image_path=sample_folder / "husky.jpeg",
+        weights_path=weight,
         device=DEVICE,
         class_names=DEFAULT_CLASSES
     )
 
-    pass
-
-if __name__ == "__main__":
-    main()
+    print(f"predicted class: {predicted_class}, probability: {confidence}")
