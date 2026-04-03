@@ -5,7 +5,7 @@ from PIL import Image
 from pathlib import Path
 
 from src.data.transforms import get_transforms
-from src.models.resnet import TransferResNet
+from src.models.transfer_resnet import TransferResNet
 
 
 DEFAULT_CLASSES = ['Cat', 'Dog']
@@ -75,7 +75,7 @@ if __name__ == "__main__":
     weight = Path("experiments") / "run_01" / "best_model.pth"
 
     predicted_class, confidence = infer_image(
-        image_path=sample_folder / "husky.jpeg",
+        image_path=sample_folder / "mofusand.png",
         weights_path=weight,
         device=DEVICE,
         class_names=DEFAULT_CLASSES
