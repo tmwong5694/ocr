@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 from pathlib import Path
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 from src.utils.metrics import get_batch_accuracy
 from src.utils.set_logger import set_logger
@@ -39,7 +40,8 @@ def train_model(
         correct_train = 0
         total_train = 0
 
-        for batch_idx, (inputs, labels) in enumerate(train_loader):
+        train_loop = tqdm(train_loader, desc=f"Train Epoch {epoch + 1}", leave=False)
+        for batch_idx, (inputs, labels) in enumerate(train_loop):
             inputs, labels = inputs.to(device), labels.to(device)
             num_samples = labels.size(0)
 
@@ -61,8 +63,9 @@ def train_model(
             batch_acc = get_batch_accuracy(outputs, labels, num_samples)
             correct_train += batch_acc * num_samples
 
-            if (batch_idx + 1) % 10 == 0:
-                logger.info(f"  Train Batch {batch_idx + 1}/{len(train_loader)} | Loss: {loss.item():.4f}")
+            train_loop.set_postfix(loss=f"{loss.item():.4f}", acc=f"{batch_acc:.4f}")
+            if (batch_idx + 1) % 50 == 0:
+                logger.info(f"Train Batch {batch_idx + 1}/{len(train_loader)} | Loss: {loss.item():.4f}")
 
         epoch_train_loss = running_train_loss / len(train_loader.dataset)
         epoch_train_acc = correct_train / total_train
@@ -77,7 +80,9 @@ def train_model(
         logger.info("  Running validation...")
 
         with torch.no_grad():
-            for batch_idx, (inputs, labels) in enumerate(val_loader):
+
+            val_loop = tqdm(val_loader, desc=f"Val Epoch {epoch + 1}", leave=False)
+            for batch_idx, (inputs, labels) in enumerate(val_loop):
                 inputs, labels = inputs.to(device), labels.to(device)
                 num_samples = labels.size(0)
 
