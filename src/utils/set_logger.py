@@ -13,7 +13,7 @@ def set_loguru(level: str, logger_path: str | Path) -> None:
     logger.remove()
 
     logger.add(
-        lambda msg: tqdm.write(msg, end=""), 
+        lambda msg: tqdm.write(msg, file=sys.stderr, end=""),
         level=level.upper(), 
         colorize=True,
         format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:{line} - <level>{message}</level>"
