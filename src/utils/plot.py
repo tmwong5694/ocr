@@ -22,5 +22,6 @@ def plot_loss(
 
     if save_path:
         save_path = Path(save_path)
-        if not save_path.parent.exists(): save_path.parent.mkdir(parents=True, exist_ok=False)
+        if not save_path.parent.exists():
+            save_path.parent.mkdir(parents=True, exist_ok=False)
         plt.savefig(save_path)
