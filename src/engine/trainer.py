@@ -26,11 +26,11 @@ def train_model(
 
     history = {'train_loss': [], 'train_acc': [], 'val_loss': [], 'val_acc': []}
 
-    logger.info(f"Starting training on device: {device}")
+    logger.info("Starting training on device: {}", device)
     start_time = time.perf_counter()
 
     for epoch in range(num_epochs):
-        logger.info(f"\nEpoch {epoch + 1}/{num_epochs}")
+        logger.info("\nEpoch {}/{}", epoch + 1, num_epochs)
         logger.info("-" * 20)
 
         model.train()
@@ -63,7 +63,7 @@ def train_model(
 
             train_loop.set_postfix(loss=f"{loss.item():.4f}", acc=f"{batch_acc:.4f}")
             if (batch_idx + 1) % 50 == 0:
-                logger.info(f"Train Batch {batch_idx + 1}/{len(train_loader)} | Loss: {loss.item():.4f}")
+                logger.info("Train Batch {}/{} | Loss: {:.4f}", batch_idx + 1, len(train_loader), loss.item())
 
         epoch_train_loss = running_train_loss / len(train_loader.dataset)
         epoch_train_acc = correct_train / total_train
@@ -99,8 +99,8 @@ def train_model(
 
 
 
-        logger.info(f"Train Loss: {epoch_train_loss:.4f} | Train Acc: {epoch_train_acc:.4f}")
-        logger.info(f"Val Loss:   {epoch_val_loss:.4f} | Val Acc:   {epoch_val_acc:.4f}")
+        logger.info("Train Loss: {:.4f} | Train Acc: {:.4f}", epoch_train_loss, epoch_train_acc)
+        logger.info("Val Loss:   {:.4f} | Val Acc:   {:.4f}", epoch_val_loss, epoch_val_acc)
 
         history['train_loss'].append(epoch_train_loss)
         history['train_acc'].append(epoch_train_acc)
@@ -109,13 +109,17 @@ def train_model(
 
         # Save the model if validation loss decreased
         if epoch_val_loss < best_val_loss:
-            logger.info(f"*** Validation loss decreased ({best_val_loss:.4f} --> {epoch_val_loss:.4f}). Saving model... ***")
+            logger.info(
+                "*** Validation loss decreased ({:.4f} --> {:.4f}). Saving model... ***",
+                best_val_loss,
+                epoch_val_loss
+            )
             best_val_loss = epoch_val_loss
             torch.save(model.state_dict(), save_path)
 
     # Calculate elapsed time using perf_counter
     time_elapsed = time.perf_counter() - start_time
-    logger.info(f"\nTraining complete in {time_elapsed // 60:.0f}m {time_elapsed % 60:.0f}s")
-    logger.info(f"Best val_loss: {best_val_loss:.4f}")
+    logger.info("\nTraining complete in {:.0f}m {:.0f}s", time_elapsed // 60, time_elapsed % 60)
+    logger.info("Best val_loss: {:.4f}", best_val_loss)
 
     return model, history

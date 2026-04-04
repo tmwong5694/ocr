@@ -40,7 +40,8 @@ def load_config(config_path) -> dict:
 def main(config_path: Path | str) -> None:
     # 1. Setup Environment
     config_path = Path(config_path)
-    if not config_path.is_file(): raise FileNotFoundError(f"config file '{config_path}' does not exist")
+    if not config_path.is_file():
+        raise FileNotFoundError(f"config file '{config_path}' does not exist")
     cfg = load_config(config_path)
 
     if torch.backends.mps.is_available():
@@ -50,7 +51,7 @@ def main(config_path: Path | str) -> None:
     else:
         DEVICE = torch.device("cpu")
 
-    logger.info(f"--- PyTorch Image Classification ---\nUsing device: {DEVICE}")
+    logger.info("--- PyTorch Image Classification ---\nUsing device: {}", DEVICE)
 
     # 2. Data Pipeline
     logger.info("Loading datasets...")
@@ -60,10 +61,10 @@ def main(config_path: Path | str) -> None:
         seed=cfg['seed'],
         num_workers=cfg['num_workers']
     )
-    logger.info(f"Train: {len(train_loader)} | Val: {len(val_loader)} | Test: {len(test_loader)}")
+    logger.info("Train: {} | Val: {} | Test: {}", len(train_loader), len(val_loader), len(test_loader))
 
     # 3. Model Initialization
-    logger.info(f"Initializing {cfg['model']['name']}...")
+    logger.info("Initializing {}...", cfg['model']['name'])
     model = get_model(cfg)
 
     # 4. Training Components
@@ -89,7 +90,7 @@ def main(config_path: Path | str) -> None:
     image_path = Path("outputs") / "plots" / f"loss_resnet18_epoch{cfg['num_epochs']}_{date.today():%Y.%m.%d}.jpeg"
     plot_loss(train_loss=history['train_loss'], val_loss=history["val_loss"], save_path=image_path)
 
-    logger.info(f"\nPipeline complete! Weights saved in '{cfg['save_path']}'.")
+    logger.info("\nPipeline complete! Weights saved in '{}'.", cfg['save_path'])
 
 
 if __name__ == "__main__":
