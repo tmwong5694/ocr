@@ -1,6 +1,6 @@
 model:
 #  name: "TransferResNet"
-  name: "catdogclassifier"
+  name: "CatDogClassifier"
   params:
     num_classes: 2
     freeze: true
@@ -18,4 +18,4 @@ freeze: true
 # Training settings
 num_epochs: 10
 learning_rate: 0.001
-save_path: "experiments/run_01/best_model.pth"
+save_path: "experiments/cat_dog_classifier/run_01/best_model.pth"
