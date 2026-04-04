@@ -18,10 +18,12 @@ def plot_loss(
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.legend()
-    plt.show()
 
     if save_path:
         save_path = Path(save_path)
         if not save_path.parent.exists():
             save_path.parent.mkdir(parents=True, exist_ok=False)
         plt.savefig(save_path)
+
+    # plt.show() clears the canvas, need to put at the end
+    plt.show()
