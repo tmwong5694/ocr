@@ -42,8 +42,12 @@ def main(config_path: Path | str) -> None:
         raise FileNotFoundError(f"config file '{config_path}' does not exist")
     cfg = load_config(config_path)
 
-    log_dir = Path(cfg['paths']['experiments_root']) / cfg['experiment_name'] / cfg['run_name'] / cfg['paths'].get(
-        'logs_dirname', 'logs')
+    log_dir = (
+        Path(cfg['paths']['experiments_root']) /
+        cfg['experiment_name'] /
+        cfg['run_name'] /
+        cfg['paths'].get('logs_dirname', 'logs')
+    )
     log_dir.mkdir(parents=True, exist_ok=True)
     log_path = log_dir / f"training_{cfg['model']['name']}.log"
 
