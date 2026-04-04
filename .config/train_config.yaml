@@ -1,21 +1,29 @@
+experiment_name: "cat_dog_classifier"
+# experiment_name: "transfer_resnet"
+run_name: "run_01"
+seed: 42
+
+data:
+  dataset_dir: "./data/images"
+  batch_size: 64
+  num_workers: 0
+
 model:
-#  name: "TransferResNet"
   name: "CatDogClassifier"
+  # name: "TransferResNet"
   params:
     num_classes: 2
     freeze: true
 
-# Data settings
-data_dir: "./data/images"
-batch_size: 64
-num_workers: 0
-seed: 42
+training:
+  num_epochs: 10
+  optimizer:
+    name: "Adam"
+    learning_rate: 0.001
 
-# Model settings
-num_classes: 2
-freeze: true
-
-# Training settings
-num_epochs: 10
-learning_rate: 0.001
-save_path: "experiments/cat_dog_classifier/run_01/best_model.pth"
+paths:
+    experiments_root: "./experiments"
+    checkpoints_dirname: "checkpoints"
+    logs_dirname: "logs"
+    artifacts_dirname: "artifacts"
+    config_dirname: "configs"
