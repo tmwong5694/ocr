@@ -2,16 +2,16 @@ import argparse
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from loguru import logger
 from pathlib import Path
 
 from src.data.dataset import get_dataloaders
 from src.engine.trainer import train_model
 from src.models.factory import get_model
 from src.utils.config import load_config
+from src.utils.logger import set_loguru
 from src.utils.plot import plot_loss
 
-from loguru import logger
-from src.utils.logger import set_loguru
 
 
 def main(config_path: Path | str) -> None:
