@@ -2,6 +2,7 @@ import argparse
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import yaml
 from loguru import logger
 from pathlib import Path
 
@@ -40,6 +41,9 @@ def main(config_path: Path | str) -> None:
         DEVICE = torch.device("cpu")
 
     logger.info("--- PyTorch Image Classification ---\nUsing device: {}", DEVICE)
+
+    config_yaml_str = yaml.dump(cfg, default_flow_style=False, sort_keys=False)
+    logger.info("Configuration settings for this run:\n{}", config_yaml_str)
 
     # 2. Data Pipeline
     logger.info("Loading datasets...")
