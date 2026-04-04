@@ -103,10 +103,21 @@ def main(config_path: Path | str) -> None:
         save_path=save_path
     )
 
-    image_dir = Path("outputs") / "plots"
-    image_name = f"loss_{cfg['model']['name']}_epoch{cfg['training']['num_epochs']}_{date.today():%Y.%m.%d}.jpeg"
 
-    plot_loss(train_loss=history['train_loss'], val_loss=history["val_loss"], save_path=image_dir / image_name)
+    artifacts_dir = (
+        Path(cfg['paths']['experiments_root']) /
+        cfg['experiment_name'] /
+        cfg['run_name'] /
+        cfg['paths'].get('artifacts_dirname', 'artifacts')
+    )
+    artifacts_dir.mkdir(parents=True, exist_ok=True)
+    loss_curve_name = "loss_curve.jpeg"
+
+    plot_loss(
+        train_loss=history['train_loss'],
+        val_loss=history["val_loss"],
+        save_path=artifacts_dir / loss_curve_name
+    )
 
     logger.info("\nPipeline complete! Weights saved in '{}'.", save_path)
 
