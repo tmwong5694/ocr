@@ -27,7 +27,7 @@ def infer_image(
         raise FileNotFoundError("Weights does not exist")
 
     model_params = {"num_classes": len(class_names)}
-    if model_name.lower() == "transferresnet":
+    if model_name.lower().replace("_", "") == "transferresnet":
         model_params["freeze"] = True
 
     model = get_model(model_name=model_name, model_params=model_params)
