@@ -2,22 +2,16 @@ import argparse
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import yaml
-from datetime import date
 from pathlib import Path
 
 from src.data.dataset import get_dataloaders
 from src.engine.trainer import train_model
 from src.models.factory import get_model
+from src.utils.config import load_config
 from src.utils.plot import plot_loss
-from loguru import logger 
-from src.utils.set_logger import set_loguru
 
-
-def load_config(config_path) -> dict:
-    """Safely loads the YAML configuration file."""
-    with open(config_path, "r") as file:
-        return yaml.safe_load(file)
+from loguru import logger
+from src.utils.logger import set_loguru
 
 
 def main(config_path: Path | str) -> None:
