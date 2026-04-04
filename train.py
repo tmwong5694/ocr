@@ -20,12 +20,13 @@ set_loguru(level="info", logger_path=log_path)
 
 
 def get_model(cfg: dict):
-    model_name = cfg['model']['name'].lower()
+    model_name = cfg['model']['name']
+    model_name_lower = model_name.lower()
     model_params = cfg['model']['params']
     
-    if model_name == "transferresnet":
+    if model_name_lower == "transferresnet":
         return TransferResNet(**model_params)
-    elif model_name == "catdogclassifier":
+    elif model_name_lower == "catdogclassifier":
         return CatDogClassifier(**model_params)
     else:
         raise ValueError(f"Model {model_name} is not supported!")
