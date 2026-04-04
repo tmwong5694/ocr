@@ -21,7 +21,8 @@ class TransferResNet(nn.Module):
 
     def forward(self, x):
         return self.model(x)
-    
+
+    # TODO: check what does it do later
     def get_embedding(self, x):
         return self.feature_extractor(x).squeeze()
 
