@@ -5,6 +5,7 @@ from pathlib import Path
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
+from src.utils.early_stopping import EarlyStopping
 from src.utils.metrics import get_batch_accuracy
 from loguru import logger
 
@@ -17,7 +18,8 @@ def train_model(
         optimizer: torch.optim.Optimizer,
         num_epochs: int,
         device: torch.device,
-        save_path: Path = "best_model.pth"
+        save_path: Path = "best_model.pth",
+        early_stopping: EarlyStopping = None
 ):
 
     model = model.to(device)
@@ -108,13 +110,12 @@ def train_model(
         history['val_acc'].append(epoch_val_acc)
 
         # Save the model if validation loss decreased
-        if epoch_val_loss < best_val_loss:
-            logger.info(
-                "*** Validation loss decreased ({:.4f} --> {:.4f}). Saving model... ***",
-                best_val_loss,
-                epoch_val_loss
-            )
-            best_val_loss = epoch_val_loss
+        if early_stopping is not None:
+            should_stop = early_stopping(val_loss=epoch_val_loss, model=model, save_path=save_path)
+            if should_stop:
+                break
+        else:
+            # Fallback if no early stopping was requested
             torch.save(model.state_dict(), save_path)
 
     # Calculate elapsed time using perf_counter

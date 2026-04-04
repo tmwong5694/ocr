@@ -10,6 +10,7 @@ from src.data.dataset import get_dataloaders
 from src.engine.trainer import train_model
 from src.models.factory import get_model
 from src.utils.config import load_config
+from src.utils.early_stopping import EarlyStopping
 from src.utils.logger import set_loguru
 from src.utils.plot import plot_loss
 
@@ -75,8 +76,11 @@ def main(config_path: Path | str) -> None:
         cfg['paths']['checkpoints_dirname']
     )
     save_path = save_dir / "best_model.pth"
-
     save_dir.mkdir(parents=True, exist_ok=True)
+
+    patience = cfg['training'].get('early_stopping_patience', 5)
+    early_stopping = EarlyStopping(patience=patience)
+
     logger.info("Starting training engine...")
     trained_model, history = train_model(
         model=model,
@@ -86,7 +90,8 @@ def main(config_path: Path | str) -> None:
         optimizer=optimizer,
         num_epochs=cfg['training']['num_epochs'],
         device=DEVICE,
-        save_path=save_path
+        save_path=save_path,
+        early_stopping=early_stopping
     )
 
 
