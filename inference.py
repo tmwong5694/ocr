@@ -4,8 +4,8 @@ import torch.nn.functional as F
 from PIL import Image
 from pathlib import Path
 
+from src.models.factory import get_model
 from src.data.transforms import get_transforms
-from src.models.transfer_resnet import TransferResNet
 
 
 DEFAULT_CLASSES = ['Cat', 'Dog']
@@ -15,6 +15,7 @@ def infer_image(
         image_path: Path | str,
         weights_path: Path | str,
         device: torch.device,
+        model_name: str,
         class_names: list[str]
 ):
     image_path = Path(image_path)
@@ -25,7 +26,11 @@ def infer_image(
     if not weights_path.is_file():
         raise FileNotFoundError("Weights does not exist")
 
-    model = TransferResNet(num_classes=len(class_names), freeze=True)
+    model_params = {"num_classes": len(class_names)}
+    if model_name.lower() == "transferresnet":
+        model_params["freeze"] = True
+
+    model = get_model(model_name=model_name, model_params=model_params)
 
     # # Load the pretrained weights
     state_dict = torch.load(weights_path, map_location=device, weights_only=True)
@@ -72,12 +77,13 @@ if __name__ == "__main__":
         DEVICE = torch.device("cpu")
 
     sample_folder = Path("samples")
-    weight = Path("experiments") / "run_01" / "best_model.pth"
+    weight = Path("experiments") / "cat_dog_classifier" / "run_02" / "checkpoints" / "best_model.pth"
 
     predicted_class, confidence = infer_image(
-        image_path=sample_folder / "mofusand.png",
+        image_path=sample_folder / "husky.jpeg",
         weights_path=weight,
         device=DEVICE,
+        model_name="catdogclassifier",
         class_names=DEFAULT_CLASSES
     )
 

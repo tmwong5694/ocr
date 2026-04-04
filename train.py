@@ -7,26 +7,11 @@ from datetime import date
 from pathlib import Path
 
 from src.data.dataset import get_dataloaders
-from src.engine.trainer import train_model 
-from src.models.transfer_resnet import TransferResNet
-from src.models.cat_dog_classifier import CatDogClassifier
+from src.engine.trainer import train_model
+from src.models.factory import get_model
 from src.utils.plot import plot_loss
 from loguru import logger 
 from src.utils.set_logger import set_loguru
-
-
-
-def get_model(cfg: dict):
-    model_name = cfg['model']['name']
-    model_name_lower = model_name.lower()
-    model_params = cfg['model']['params']
-    
-    if model_name_lower == "transferresnet":
-        return TransferResNet(**model_params)
-    elif model_name_lower == "catdogclassifier":
-        return CatDogClassifier(**model_params)
-    else:
-        raise ValueError(f"Model {model_name} is not supported!")
 
 
 def load_config(config_path) -> dict:
@@ -74,7 +59,10 @@ def main(config_path: Path | str) -> None:
 
     # 3. Model Initialization
     logger.info("Initializing {}...", cfg['model']['name'])
-    model = get_model(cfg)
+    model = get_model(
+        model_name=cfg['model']['name'],
+        model_params=cfg['model']['params']
+    )
 
     # 4. Training Components
     criterion = nn.CrossEntropyLoss()
