@@ -84,6 +84,7 @@ def train_model(
             val_loop = tqdm(val_loader, desc=f"Val Epoch {epoch + 1}", leave=False)
             for batch_idx, (inputs, labels) in enumerate(val_loop):
                 inputs, labels = inputs.to(device), labels.to(device)
+                # Last batch can be equal to or less than predefined batch_size in loader
                 num_samples = labels.size(0)
 
                 outputs = model(inputs)
