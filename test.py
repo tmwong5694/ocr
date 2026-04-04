@@ -7,6 +7,7 @@ from loguru import logger
 from src.data.dataset import get_dataloaders
 from src.models.factory import get_model
 from src.utils.config import load_config
+from src.utils.metrics import get_batch_accuracy
 from src.utils.logger import set_loguru
 
 
@@ -44,26 +45,28 @@ def evaluate_test_set(config_path: str | Path):
     # 4. Evaluation Loop
     criterion = nn.CrossEntropyLoss()
     total_loss = 0.0
-    correct = 0
-    total = 0
+    correct_count = total_count = 0
 
     logger.info("Starting evaluation on test set...")
     with torch.no_grad():
         for inputs, labels in test_loader:
             inputs, labels = inputs.to(device), labels.to(device)
+            # Last batch can be equal to or less than predefined batch_size in loader
+            current_batch_size = inputs.size(0)
+
             outputs = model(inputs)
-
             loss = criterion(outputs, labels)
-            total_loss += loss.item() * inputs.size(0)
 
-            _, predicted = torch.max(outputs, 1)
-            total += labels.size(0)
-            correct += (predicted == labels.view_as(predicted)).sum().item()
+            total_loss += loss.item() * current_batch_size
+            total_count += current_batch_size
 
-    avg_loss = total_loss / total
-    accuracy = correct / total
+            batch_acc = get_batch_accuracy(outputs, labels, current_batch_size)
+            correct_count += batch_acc * current_batch_size
 
-    logger.info("Test Set Results | Loss: {:.4f} | Accuracy: {:.4f} ({}/{})", avg_loss, accuracy, correct, total)
+    avg_loss = total_loss / len(test_loader.dataset)
+    accuracy = correct_count / total_count
+
+    logger.info("Test Set Results | Loss: {:.4f} | Accuracy: {:.4f} ({}/{})", avg_loss, accuracy, correct_count, total_count)
 
 
 if __name__ == "__main__":
