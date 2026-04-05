@@ -72,15 +72,17 @@ def main(config_path: Path | str) -> None:
     trainable_params = filter(lambda p: p.requires_grad, model.parameters())
     optimizer = optim.Adam(trainable_params, lr=cfg['training']['optimizer']['learning_rate'])
 
+
     # 5. Execute Training Engine
-    save_dir = (
-        Path(cfg['paths']['experiments_root']) /
-        cfg['experiment_name'] /
-        cfg['run_name'] /
-        cfg['paths']['checkpoints_dirname']
-    )
+    parent_path = Path(cfg['paths']['experiments_root']) / cfg['experiment_name'] / cfg['run_name']
+
+    save_dir = parent_path / cfg['paths']['checkpoints_dirname']
     save_path = save_dir / "best_model.pth"
     save_dir.mkdir(parents=True, exist_ok=True)
+
+    artifacts_dir = parent_path / cfg['paths'].get('artifacts_dirname', 'artifacts')
+    artifacts_dir.mkdir(parents=True, exist_ok=True)
+    loss_curve_path = artifacts_dir / "loss_curve.jpeg"
 
     patience = cfg['training'].get('patience', 10)
     early_stopping = EarlyStopping(patience=patience)
@@ -96,24 +98,10 @@ def main(config_path: Path | str) -> None:
         device=DEVICE,
         save_path=save_path,
         class_mapping=class_mapping,
-        early_stopping=early_stopping
+        early_stopping=early_stopping,
+        plot_save_path=loss_curve_path
     )
 
-
-    artifacts_dir = (
-        Path(cfg['paths']['experiments_root']) /
-        cfg['experiment_name'] /
-        cfg['run_name'] /
-        cfg['paths'].get('artifacts_dirname', 'artifacts')
-    )
-    artifacts_dir.mkdir(parents=True, exist_ok=True)
-    loss_curve_name = "loss_curve.jpeg"
-
-    plot_loss(
-        train_loss=history['train_loss'],
-        val_loss=history["val_loss"],
-        save_path=artifacts_dir / loss_curve_name
-    )
 
     logger.info("\nPipeline complete! Weights saved in '{}'.", save_path)
 

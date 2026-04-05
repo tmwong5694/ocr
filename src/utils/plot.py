@@ -8,7 +8,8 @@ def plot_loss(
         title: str = "Loss vs Epochs",
         xlabel: str = "Epochs",
         ylabel: str = "Loss",
-        save_path: str | Path | None = None
+        save_path: str | Path | None = None,
+        show: bool = False
 ) -> None:
     
     plt.figure(figsize=figsize)
@@ -25,5 +26,8 @@ def plot_loss(
             save_path.parent.mkdir(parents=True, exist_ok=False)
         plt.savefig(save_path)
 
-    # plt.show() clears the canvas, need to put at the end
-    plt.show()
+    if show:
+        # plt.show() clears the canvas, need to put at the end
+        plt.show()
+    # Close the active canvas
+    plt.close()

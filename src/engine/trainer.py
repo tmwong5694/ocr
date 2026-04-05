@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 from pathlib import Path
 from torch.utils.data import DataLoader
+from src.utils.plot import plot_loss
 from tqdm import tqdm
 
 from src.utils.early_stopping import EarlyStopping
@@ -20,7 +21,8 @@ def train_model(
         device: torch.device,
         save_path: Path = "best_model.pth",
         class_mapping: dict = None,
-        early_stopping: EarlyStopping = None
+        early_stopping: EarlyStopping = None,
+        plot_save_path: Path = "best_model.png"
 ):
 
     model = model.to(device)
@@ -110,6 +112,14 @@ def train_model(
         history['train_acc'].append(epoch_train_acc)
         history['val_loss'].append(epoch_val_loss)
         history['val_acc'].append(epoch_val_acc)
+
+        if plot_save_path:
+            plot_loss(
+                train_loss=history['train_loss'],
+                val_loss=history['val_loss'],
+                save_path=plot_save_path,
+                show=False
+            )
 
 
         checkpoint = {
