@@ -12,7 +12,6 @@ from src.models.factory import get_model
 from src.utils.config import load_config
 from src.utils.early_stopping import EarlyStopping
 from src.utils.logger import set_loguru
-from src.utils.plot import plot_loss
 
 
 
