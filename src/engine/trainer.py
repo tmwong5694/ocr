@@ -22,7 +22,8 @@ def train_model(
         save_path: Path = "best_model.pth",
         class_mapping: dict = None,
         early_stopping: EarlyStopping = None,
-        plot_save_path: Path = "best_model.png"
+        plot_save_path: Path = "best_model.png",
+        scheduler=None
 ):
 
     model = model.to(device)
@@ -112,6 +113,11 @@ def train_model(
         history['train_acc'].append(epoch_train_acc)
         history['val_loss'].append(epoch_val_loss)
         history['val_acc'].append(epoch_val_acc)
+
+        if scheduler is not None:
+            scheduler.step(epoch_val_loss)
+            current_lr = optimizer.param_groups[0]['lr']
+            logger.info("Current Learning Rate: {:.6f}", current_lr)
 
         if plot_save_path:
             plot_loss(

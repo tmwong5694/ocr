@@ -5,6 +5,7 @@ import torch.optim as optim
 import yaml
 from loguru import logger
 from pathlib import Path
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from src.data.dataset import get_dataloaders
 from src.engine.trainer import train_model
@@ -71,6 +72,19 @@ def main(config_path: Path | str) -> None:
     trainable_params = filter(lambda p: p.requires_grad, model.parameters())
     optimizer = optim.Adam(trainable_params, lr=cfg['training']['optimizer']['learning_rate'])
 
+    # Add scheduler initialization
+    scheduler = None
+    if 'scheduler' in cfg['training']:
+        sch_cfg = cfg['training']['scheduler']
+        if sch_cfg['name'] == 'ReduceLROnPlateau':
+            scheduler = ReduceLROnPlateau(
+                optimizer,
+                mode='min',
+                factor=sch_cfg.get('factor', 0.1),
+                patience=sch_cfg.get('scheduler_patience', 10),
+                min_lr=float(sch_cfg.get('min_lr', 1e-6))
+            )
+
 
     # 5. Execute Training Engine
     parent_path = Path(cfg['paths']['experiments_root']) / cfg['experiment_name'] / cfg['run_name']
@@ -83,7 +97,7 @@ def main(config_path: Path | str) -> None:
     artifacts_dir.mkdir(parents=True, exist_ok=True)
     loss_curve_path = artifacts_dir / "loss_curve.jpeg"
 
-    patience = cfg['training'].get('patience', 10)
+    patience = cfg['training'].get('early_stop_patience', 10)
     early_stopping = EarlyStopping(patience=patience)
 
     logger.info("Starting training engine...")
@@ -98,7 +112,8 @@ def main(config_path: Path | str) -> None:
         save_path=save_path,
         class_mapping=class_mapping,
         early_stopping=early_stopping,
-        plot_save_path=loss_curve_path
+        plot_save_path=loss_curve_path,
+        scheduler=scheduler
     )
 
 

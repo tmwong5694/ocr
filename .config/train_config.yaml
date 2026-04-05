@@ -1,6 +1,6 @@
 experiment_name: "cat_dog_classifier"
-# experiment_name: "transfer_resnet"
-run_name: "run_01"
+#experiment_name: "transfer_resnet"
+run_name: "run_11"
 seed: 42
 
 data:
@@ -10,16 +10,22 @@ data:
 
 model:
   name: "CatDogClassifier"
-  # name: "TransferResNet"
+#  name: "TransferResNet"
   params:
     num_classes: 2
     freeze: true
 
 training:
-  num_epochs: 10
+  num_epochs: 100
+  early_stop_patience: 15
   optimizer:
     name: "Adam"
     learning_rate: 0.001
+  scheduler:
+    name: "ReduceLROnPlateau"
+    factor: 0.1
+    scheduler_patience: 7
+    min_lr: 0.000001
 
 paths:
     experiments_root: "./experiments"
