@@ -86,7 +86,7 @@ def train_model(
         with torch.no_grad():
 
             val_loop = tqdm(val_loader, desc=f"Val Epoch {epoch + 1}", leave=False)
-            for batch_idx, (inputs, labels) in enumerate(val_loop):
+            for (inputs, labels) in val_loop:
                 inputs, labels = inputs.to(device), labels.to(device)
                 # Last batch can be equal to or less than predefined batch_size in loader
                 current_batch_size = labels.size(0)
