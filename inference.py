@@ -13,7 +13,24 @@ def infer_image(
         weights_path: Path | str,
         device: torch.device,
         model_name: str
-):
+) -> tuple[str, float]:
+    """
+    Infer an image using a trained model.
+    Loads the image to infer, weights of a pretrained model, and returns the predicted class and confidence score.
+
+    Args:
+        image_path (Path | str): Path to the image to infer.
+        weights_path (Path | str): Path to the pretrained weights.
+        device (torch.device): Device to use.
+        model_name (str): Name of the model.
+
+    Returns:
+        tuple[str, float]: Predicted class and confidence score.
+
+    Raises:
+        FileNotFoundError: If the image or weights file does not exist.
+        RuntimeError: If the image cannot be loaded.
+    """
     image_path = Path(image_path)
     weights_path = Path(weights_path)
 
@@ -78,13 +95,13 @@ if __name__ == "__main__":
         DEVICE = torch.device("cpu")
 
     sample_folder = Path("samples")
-    weight = Path("experiments") / "transfer_resnet" / "run_03" / "checkpoints" / "best_model.pth"
+    weight = Path("experiments") / "cat_dog_classifier" / "run_10" / "checkpoints" / "best_model.pth"
 
     predicted_class, confidence = infer_image(
-        image_path=sample_folder / "mofusand.png",
+        image_path=sample_folder / "husky2.jpeg",
         weights_path=weight,
         device=DEVICE,
-        model_name="transferresnet"
+        model_name="catdogclassifier"
     )
 
     print(f"predicted class: {predicted_class}, probability: {confidence}")
