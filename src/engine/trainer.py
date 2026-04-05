@@ -39,14 +39,14 @@ def train_model(
         logger.info("-" * 20)
 
         model.train()
-        running_train_loss = 0.0
-        correct_train = 0
-        total_train = 0
+        epoch_train_loss = 0.0
+        correct_train_count = total_train_count = 0
 
         train_loop = tqdm(train_loader, desc=f"Train Epoch {epoch + 1}", leave=False)
         for batch_idx, (inputs, labels) in enumerate(train_loop):
             inputs, labels = inputs.to(device), labels.to(device)
-            num_samples = labels.size(0)
+            # Last batch can be equal to or less than predefined batch_size in loader
+            current_batch_size = labels.size(0)
 
             # Reset the parameters gradient o prevent accumulation
             optimizer.zero_grad()
@@ -59,26 +59,27 @@ def train_model(
             loss.backward()
             optimizer.step()
 
-            # Statistics
-            running_train_loss += loss.item() * num_samples
-            total_train += num_samples
+            # Add the mean of loss * current batch size to the accumulated loss
+            epoch_train_loss += loss.item() * current_batch_size
+            total_train_count += current_batch_size
 
-            batch_acc = get_batch_accuracy(outputs, labels, num_samples)
-            correct_train += batch_acc * num_samples
-
+            # Add the mean of accuracy * size of batch to the accumulated correct counts
+            batch_acc = get_batch_accuracy(outputs, labels, current_batch_size)
+            correct_train_count += batch_acc * current_batch_size
+            # Update the loss and accuracy at the end of each batch
             train_loop.set_postfix(loss=f"{loss.item():.4f}", acc=f"{batch_acc:.4f}")
             if (batch_idx + 1) % 50 == 0:
                 logger.info("Train Batch {}/{} | Loss: {:.4f}", batch_idx + 1, len(train_loader), loss.item())
 
-        epoch_train_loss = running_train_loss / len(train_loader.dataset)
-        epoch_train_acc = correct_train / total_train
+        epoch_train_loss = epoch_train_loss / len(train_loader.dataset)
+        epoch_train_acc = correct_train_count / total_train_count
 
 
 
         model.eval()
-        running_val_loss = 0.0
-        correct_val = 0
-        total_val = 0
+        epoch_val_loss = 0.0
+        correct_val_count = total_val_count = 0
+
 
         logger.info("  Running validation...")
 
@@ -88,20 +89,19 @@ def train_model(
             for batch_idx, (inputs, labels) in enumerate(val_loop):
                 inputs, labels = inputs.to(device), labels.to(device)
                 # Last batch can be equal to or less than predefined batch_size in loader
-                num_samples = labels.size(0)
+                current_batch_size = labels.size(0)
 
                 outputs = model(inputs)
                 loss = criterion(outputs, labels)
 
-                running_val_loss += loss.item() * num_samples
-                total_val += num_samples
+                epoch_val_loss += loss.item() * current_batch_size
+                total_val_count += current_batch_size
 
-                # Robust, Pythonic accuracy calculation
-                batch_acc = get_batch_accuracy(outputs, labels, num_samples)
-                correct_val += batch_acc * num_samples
+                batch_acc = get_batch_accuracy(outputs, labels, current_batch_size)
+                correct_val_count += batch_acc * current_batch_size
 
-        epoch_val_loss = running_val_loss / len(val_loader.dataset)
-        epoch_val_acc = correct_val / total_val
+        epoch_val_loss = epoch_val_loss / len(val_loader.dataset)
+        epoch_val_acc = correct_val_count / total_val_count
 
 
 
