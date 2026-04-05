@@ -19,6 +19,7 @@ def train_model(
         num_epochs: int,
         device: torch.device,
         save_path: Path = "best_model.pth",
+        class_mapping: dict = None,
         early_stopping: EarlyStopping = None
 ):
 
@@ -110,14 +111,20 @@ def train_model(
         history['val_loss'].append(epoch_val_loss)
         history['val_acc'].append(epoch_val_acc)
 
+
+        checkpoint = {
+            'model_state_dict': model.state_dict(),
+            'class_to_idx': class_mapping
+        }
+
         # Save the model if validation loss decreased
         if early_stopping is not None:
-            should_stop = early_stopping(val_loss=epoch_val_loss, model=model, save_path=save_path)
+            should_stop = early_stopping(val_loss=epoch_val_loss, model=model, save_path=save_path, checkpoint=checkpoint)
             if should_stop:
                 break
         else:
             # Fallback if no early stopping was requested
-            torch.save(model.state_dict(), save_path)
+            torch.save(checkpoint, save_path)
 
     # Calculate elapsed time using perf_counter
     time_elapsed = time.perf_counter() - start_time

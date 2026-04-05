@@ -38,7 +38,8 @@ def evaluate_test_set(config_path: str | Path):
     # 3. Model setup
     logger.info("Loading model architecture '{}'...", cfg['model']['name'])
     model = get_model(cfg['model']['name'], cfg['model']['params'])
-    model.load_state_dict(torch.load(weights_path, map_location=device, weights_only=True))
+    state_dict = torch.load(weights_path, map_location=device, weights_only=True)["model_state_dict"]
+    model.load_state_dict(state_dict)
     model.to(device)
     model.eval()
 

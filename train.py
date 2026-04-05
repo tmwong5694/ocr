@@ -54,6 +54,10 @@ def main(config_path: Path | str) -> None:
         seed=cfg['seed'],
         num_workers=cfg['data']['num_workers']
     )
+
+    # Extract class_to_idx mapping
+    class_mapping = train_loader.dataset.dataset.class_to_idx
+
     logger.info("Train: {} | Val: {} | Test: {}", len(train_loader), len(val_loader), len(test_loader))
 
     # 3. Model Initialization
@@ -78,7 +82,7 @@ def main(config_path: Path | str) -> None:
     save_path = save_dir / "best_model.pth"
     save_dir.mkdir(parents=True, exist_ok=True)
 
-    patience = cfg['training'].get('early_stopping_patience', 5)
+    patience = cfg['training'].get('patience', 10)
     early_stopping = EarlyStopping(patience=patience)
 
     logger.info("Starting training engine...")
@@ -91,6 +95,7 @@ def main(config_path: Path | str) -> None:
         num_epochs=cfg['training']['num_epochs'],
         device=DEVICE,
         save_path=save_path,
+        class_mapping=class_mapping,
         early_stopping=early_stopping
     )
 

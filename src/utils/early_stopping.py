@@ -16,7 +16,7 @@ class EarlyStopping:
         self.best_loss = float('inf')
         self.early_stop = False
 
-    def __call__(self, val_loss: float, model: torch.nn.Module, save_path: Path) -> bool:
+    def __call__(self, val_loss: float, model: torch.nn.Module, save_path: Path, checkpoint: dict = None) -> bool:
         """
         Returns True if training should stop.
         """
@@ -29,8 +29,10 @@ class EarlyStopping:
             )
             self.best_loss = val_loss
             self.counter = 0
-            # Save the new top performing model
-            torch.save(model.state_dict(), save_path)
+            if checkpoint is not None:
+                torch.save(checkpoint, save_path)
+            else:
+                torch.save(model.state_dict(), save_path)
         else:
             self.counter += 1
             logger.warning("EarlyStopping counter: {} out of {}", self.counter, self.patience)

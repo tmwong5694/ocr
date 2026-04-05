@@ -7,15 +7,12 @@ from src.models.factory import get_model
 from src.data.transforms import get_transforms
 
 
-DEFAULT_CLASSES = ['Cat', 'Dog']
-
 
 def infer_image(
         image_path: Path | str,
         weights_path: Path | str,
         device: torch.device,
-        model_name: str,
-        class_names: list[str]
+        model_name: str
 ):
     image_path = Path(image_path)
     weights_path = Path(weights_path)
@@ -25,16 +22,21 @@ def infer_image(
     if not weights_path.is_file():
         raise FileNotFoundError("Weights does not exist")
 
-    model_params = {"num_classes": len(class_names)}
+    checkpoint = torch.load(weights_path, map_location=device, weights_only=False)
+
+    # Reverse class_to_idx to idx_to_class
+    class_to_idx = checkpoint['class_to_idx']
+    idx_to_class = {v: k for k, v in class_to_idx.items()}
+    num_classes = len(class_to_idx)
+
+    model_params = {"num_classes": num_classes}
     if model_name.lower().replace("_", "") == "transferresnet":
         model_params["freeze"] = True
 
     model = get_model(model_name=model_name, model_params=model_params)
 
-    # # Load the pretrained weights
-    state_dict = torch.load(weights_path, map_location=device, weights_only=True)
-    model.load_state_dict(state_dict)
-
+    # Load the pretrained weights
+    model.load_state_dict(checkpoint['model_state_dict'])
     model.to(device)
     model.eval()
 
@@ -60,7 +62,7 @@ def infer_image(
         confidence, predicted_idx = torch.max(probabilities, dim=0)
 
     # Get the class prediction and convert score to %
-    predicted_class = class_names[predicted_idx.item()]
+    predicted_class = idx_to_class[predicted_idx.item()]
     confidence_score = confidence.item() * 100.0
 
     return predicted_class, confidence_score
@@ -76,14 +78,13 @@ if __name__ == "__main__":
         DEVICE = torch.device("cpu")
 
     sample_folder = Path("samples")
-    weight = Path("experiments") / "cat_dog_classifier" / "run_02" / "checkpoints" / "best_model.pth"
+    weight = Path("experiments") / "transfer_resnet" / "run_03" / "checkpoints" / "best_model.pth"
 
     predicted_class, confidence = infer_image(
-        image_path=sample_folder / "husky.jpeg",
+        image_path=sample_folder / "mofusand.png",
         weights_path=weight,
         device=DEVICE,
-        model_name="catdogclassifier",
-        class_names=DEFAULT_CLASSES
+        model_name="transferresnet"
     )
 
     print(f"predicted class: {predicted_class}, probability: {confidence}")
