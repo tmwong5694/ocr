@@ -11,7 +11,15 @@ from src.utils.metrics import get_batch_accuracy
 from src.utils.logger import set_loguru
 
 
-def evaluate_test_set(config_path: str | Path):
+def evaluate_test_set(config_path: str | Path) -> None:
+    """
+    Takes in the config path and evaluate the loss and accuracy on the test set.
+    The config contains path to trained model weightings and path to log.
+    Test set are parsed into the model and results are logged.
+
+    Args:
+        config_path (str | Path): The path to the config file.
+    """
     cfg = load_config(config_path)
 
     # 1. Setup paths
@@ -57,10 +65,11 @@ def evaluate_test_set(config_path: str | Path):
 
             outputs = model(inputs)
             loss = criterion(outputs, labels)
-
+            # Add the mean of loss * current batch size to the accumulated loss
             total_loss += loss.item() * current_batch_size
             total_count += current_batch_size
 
+            # Add the mean of accuracy * size of batch to the accumulated correct counts
             batch_acc = get_batch_accuracy(outputs, labels, current_batch_size)
             correct_count += batch_acc * current_batch_size
 
