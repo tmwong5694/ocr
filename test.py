@@ -8,6 +8,7 @@ from src.data.dataset import get_dataloaders
 from src.models.factory import get_model
 from src.utils.config import load_config
 from src.utils.metrics import get_batch_accuracy
+from src.utils.plot import plot_confusion_matrix
 from src.utils.logger import set_loguru
 
 
@@ -46,15 +47,19 @@ def evaluate_test_set(config_path: str | Path) -> None:
     # 3. Model setup
     logger.info("Loading model architecture '{}'...", cfg['model']['name'])
     model = get_model(cfg['model']['name'], cfg['model']['params'])
-    state_dict = torch.load(weights_path, map_location=device, weights_only=True)["model_state_dict"]
-    model.load_state_dict(state_dict)
+    pickled_object = torch.load(weights_path, map_location=device, weights_only=True)
+    model.load_state_dict(pickled_object["model_state_dict"])
     model.to(device)
     model.eval()
+
+    class_names = [class_name for class_name in pickled_object['class_to_idx']]
 
     # 4. Evaluation Loop
     criterion = nn.CrossEntropyLoss()
     total_loss = 0.0
     correct_count = total_count = 0
+    all_preds = []
+    all_labels = []
 
     logger.info("Starting evaluation on test set...")
     with torch.no_grad():
@@ -70,14 +75,26 @@ def evaluate_test_set(config_path: str | Path) -> None:
             total_count += current_batch_size
 
             # Add the mean of accuracy * size of batch to the accumulated correct counts
-            batch_acc = get_batch_accuracy(outputs, labels, current_batch_size)
-            correct_count += batch_acc * current_batch_size
+            batch_accuracy, predictions = get_batch_accuracy(outputs, labels, current_batch_size)
+            correct_count += batch_accuracy * current_batch_size
+
+            all_preds.extend(predictions.cpu().numpy())
+            all_labels.extend(labels.cpu().numpy())
 
     avg_loss = total_loss / len(test_loader.dataset)
     accuracy = correct_count / total_count
 
     logger.info("Test Set Results | Loss: {:.4f} | Accuracy: {:.4f} ({}/{})", avg_loss, accuracy, correct_count, total_count)
 
+
+    cm_save_path = cm_save_path = experiment_dir / cfg['paths'].get('artifacts_dirname', 'artifacts') / "test_confusion_matrix.jpeg"
+    plot_confusion_matrix(
+        y_true=all_labels,
+        y_pred=all_preds,
+        class_names=class_names,
+        save_path=cm_save_path,
+        show=False
+    )
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
