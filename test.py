@@ -87,7 +87,7 @@ def evaluate_test_set(config_path: str | Path) -> None:
     logger.info("Test Set Results | Loss: {:.4f} | Accuracy: {:.4f} ({}/{})", avg_loss, accuracy, correct_count, total_count)
 
 
-    cm_save_path = cm_save_path = experiment_dir / cfg['paths'].get('artifacts_dirname', 'artifacts') / "test_confusion_matrix.jpeg"
+    cm_save_path = experiment_dir / cfg['paths'].get('artifacts_dirname', 'artifacts') / "test_confusion_matrix.jpeg"
     plot_confusion_matrix(
         y_true=all_labels,
         y_pred=all_preds,
