@@ -8,7 +8,7 @@ def get_transforms(img_size: int = 224):
         v2.RandomResizedCrop(size=(img_size, img_size), scale=(0.5, 1.0), antialias=True), # Remove jagged lines
         v2.RandomHorizontalFlip(p=0.5),
         v2.RandomRotation(degrees=20),
-        v2.RandomApply([v2.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.1)], p=0.5),
+        v2.RandomApply([v2.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1)], p=0.5),
         v2.ToImage(),
         v2.ToDtype(torch.float32, scale=True),
         normalize,
