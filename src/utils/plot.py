@@ -50,7 +50,7 @@ def plot_confusion_matrix(
     sns.heatmap(
         cm,
         annot=True,
-        fmt='d',
+        fmt='.2f',
         cmap='Blues',
         xticklabels=class_names,
         yticklabels=class_names
