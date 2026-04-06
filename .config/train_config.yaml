@@ -1,10 +1,10 @@
 experiment_name: "cat_dog_classifier"
 #experiment_name: "transfer_resnet"
-run_name: "run_11"
+run_name: "run_14"
 seed: 42
 
 data:
-  dataset_dir: "./data/images"
+  dataset_dir: "./data/cats_vs_dogs"
   batch_size: 64
   num_workers: 0
 
