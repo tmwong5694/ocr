@@ -8,7 +8,7 @@ from src.data.dataset import get_dataloaders
 from src.models.factory import get_model
 from src.utils.config import load_config
 from src.utils.metrics import get_batch_accuracy
-from src.utils.plot import plot_confusion_matrix
+from src.utils.plot import get_confusion_matrix, plot_confusion_matrix
 from src.utils.logger import set_loguru
 
 
@@ -58,8 +58,9 @@ def evaluate_test_set(config_path: str | Path) -> None:
     criterion = nn.CrossEntropyLoss()
     total_loss = 0.0
     correct_count = total_count = 0
-    all_preds = []
-    all_labels = []
+
+    num_classes = len(class_names)
+    conv_mtx = get_confusion_matrix(num_classes=num_classes, normalize="true").to(device)
 
     logger.info("Starting evaluation on test set...")
     with torch.no_grad():
@@ -77,9 +78,10 @@ def evaluate_test_set(config_path: str | Path) -> None:
             # Add the mean of accuracy * size of batch to the accumulated correct counts
             batch_accuracy, predictions = get_batch_accuracy(outputs, labels, current_batch_size)
             correct_count += batch_accuracy * current_batch_size
+            # Update on the fly to save memory
+            conv_mtx.update(predictions, labels)
 
-            all_preds.extend(predictions.cpu().numpy())
-            all_labels.extend(labels.cpu().numpy())
+    conv_mtx_dense = conv_mtx.compute().cpu().numpy()
 
     avg_loss = total_loss / len(test_loader.dataset)
     accuracy = correct_count / total_count
@@ -89,8 +91,7 @@ def evaluate_test_set(config_path: str | Path) -> None:
 
     cm_save_path = experiment_dir / cfg['paths'].get('artifacts_dirname', 'artifacts') / "test_confusion_matrix.jpeg"
     plot_confusion_matrix(
-        y_true=all_labels,
-        y_pred=all_preds,
+        conv_array=conv_mtx_dense,
         class_names=class_names,
         save_path=cm_save_path,
         show=False

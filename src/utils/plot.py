@@ -1,6 +1,7 @@
 from pathlib import Path
-from sklearn.metrics import confusion_matrix
+from torchmetrics.classification import BinaryConfusionMatrix, MulticlassConfusionMatrix
 import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
 
 def plot_loss(
@@ -34,9 +35,19 @@ def plot_loss(
     # Close the active canvas
     plt.close()
 
+def get_confusion_matrix(
+        num_classes: int,
+        normalize: str
+):
+    num_classes = num_classes
+    if num_classes == 2:
+        cm = BinaryConfusionMatrix(normalize=normalize)
+    elif num_classes > 2:
+        cm = MulticlassConfusionMatrix(num_classes, normalize=normalize)
+    return cm
+
 def plot_confusion_matrix(
-        y_true: list,
-        y_pred: list,
+        conv_array: np.ndarray,
         class_names: list[str],
         figsize: tuple = (8, 6),
         title: str = "Confusion Matrix",
@@ -45,10 +56,10 @@ def plot_confusion_matrix(
         save_path: str | Path | None = None,
         show: bool = False
 ) -> None:
-    cm = confusion_matrix(y_true=y_true, y_pred=y_pred, normalize="true")
+
     plt.figure(figsize=figsize)
     sns.heatmap(
-        cm,
+        conv_array,
         annot=True,
         fmt='.2f',
         cmap='Blues',
