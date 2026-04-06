@@ -97,8 +97,8 @@ def main(config_path: Path | str) -> None:
     artifacts_dir.mkdir(parents=True, exist_ok=True)
     loss_curve_path = artifacts_dir / "loss_curve.jpeg"
 
-    patience = cfg['training'].get('early_stop_patience', 10)
-    early_stopping = EarlyStopping(patience=patience)
+    early_stopping_patience = cfg['training'].get('early_stop_patience', 10)
+    early_stopping = EarlyStopping(patience=early_stopping_patience)
 
     logger.info("Starting training engine...")
     trained_model, history = train_model(
