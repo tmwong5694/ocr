@@ -65,10 +65,10 @@ def train_model(
             total_train_count += current_batch_size
 
             # Add the mean of accuracy * size of batch to the accumulated correct counts
-            batch_acc = get_batch_accuracy(outputs, labels, current_batch_size)
-            correct_train_count += batch_acc * current_batch_size
+            batch_train_accuracy, _ = get_batch_accuracy(outputs, labels, current_batch_size)
+            correct_train_count += batch_train_accuracy * current_batch_size
             # Update the loss and accuracy at the end of each batch
-            train_loop.set_postfix(loss=f"{loss.item():.4f}", acc=f"{batch_acc:.4f}")
+            train_loop.set_postfix(loss=f"{loss.item():.4f}", acc=f"{batch_train_accuracy:.4f}")
             if (batch_idx + 1) % 50 == 0:
                 logger.info("Train Batch {}/{} | Loss: {:.4f}", batch_idx + 1, len(train_loader), loss.item())
 
@@ -98,8 +98,8 @@ def train_model(
                 epoch_val_loss += loss.item() * current_batch_size
                 total_val_count += current_batch_size
 
-                batch_acc = get_batch_accuracy(outputs, labels, current_batch_size)
-                correct_val_count += batch_acc * current_batch_size
+                batch_val_accuracy, _ = get_batch_accuracy(outputs, labels, current_batch_size)
+                correct_val_count += batch_val_accuracy * current_batch_size
 
         epoch_val_loss = epoch_val_loss / len(val_loader.dataset)
         epoch_val_acc = correct_val_count / total_val_count
