@@ -75,7 +75,7 @@ def get_MNIST_loaders(
         split_ratios: list[int | float] | tuple[int | float, ...] = (50000, 10000),
         seed: int = 42,
         num_workers: int = 0
-) -> tuple[torch.utils.data.Dataset, torch.utils.data.Dataset]:
+) -> tuple[DataLoader, DataLoader, DataLoader]:
 
     transforms_dict = get_transforms()
     train_transform = transforms_dict['train']
