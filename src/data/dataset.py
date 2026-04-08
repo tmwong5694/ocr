@@ -9,7 +9,7 @@ def _get_imagefolder_datasets(
         data_dir: str | Path,
         train_transform,
         eval_transform,
-        split_ratio: list[int | float] | tuple[int | float, ...],
+        split_ratio: list[int | float],
         seed: int = 42
 ) -> tuple[Dataset, Dataset, Dataset]:
 
@@ -18,14 +18,20 @@ def _get_imagefolder_datasets(
     val_data = datasets.ImageFolder(root=data_dir, transform=eval_transform)
     test_data = datasets.ImageFolder(root=data_dir, transform=eval_transform)
 
-    # Use indices to select respective train, val or test data
-    total_indices = range(len(train_data))
+    # Convert list of integers into list of floats
+    ratio_sum = sum(split_ratio)
+    split_ratio = [ele / ratio_sum for ele in split_ratio]
+
+    total_len = len(train_data)
+    train_len = int(total_len * split_ratio[0])
+    val_len = int(total_len * split_ratio[1])
+
     generator = torch.Generator().manual_seed(seed)
-    train_indices, val_indices, test_indices = random_split(
-        dataset=total_indices,
-        lengths=split_ratio,
-        generator=generator
-    )
+    indices = torch.randperm(total_len, generator=generator).tolist()
+
+    train_indices = indices[:train_len]
+    val_indices = indices[train_len: train_len + val_len]
+    test_indices = indices[train_len + val_len:] # Open to ensure three ratios sum up to 100%
 
     train_dataset = Subset(train_data, indices=train_indices)
     val_dataset = Subset(val_data, indices=val_indices)
@@ -37,7 +43,7 @@ def _get_mnist_datasets(
         data_dir: str | Path,
         train_transform,
         eval_transform,
-        split_ratio: list[int | float] | tuple[int | float, ...],
+        split_ratio: list[int | float],
         seed: int = 42
 ) -> tuple[Dataset, Dataset, Dataset]:
     
@@ -45,16 +51,19 @@ def _get_mnist_datasets(
     train_dataset_full = datasets.MNIST(data_dir, train=True, download=to_download, transform=train_transform)
     val_dataset_full = datasets.MNIST(data_dir, train=True, download=to_download, transform=eval_transform)
 
-    split_indices = range(len(train_dataset_full))
-    generator = torch.Generator().manual_seed(seed)
-    train_indices, val_indices = random_split(
-        dataset=split_indices,
-        lengths=split_ratio,
-        generator=generator
-    )
 
-    train_dataset = Subset(train_dataset_full, indices=train_indices)
-    val_dataset = Subset(val_dataset_full, indices=val_indices)
+    # Convert list of integers into list of floats
+    ratio_sum = sum(split_ratio)
+    split_ratio = [ele/ratio_sum for ele in split_ratio]
+
+    total_len = len(train_dataset_full)
+    train_len = int(total_len * split_ratio[0])
+
+    generator = torch.Generator().manual_seed(seed)
+    indices = torch.randperm(total_len, generator=generator).tolist()
+
+    train_dataset = Subset(train_dataset_full, indices=indices[:train_len])
+    val_dataset = Subset(val_dataset_full, indices=indices[train_len:])
     test_dataset = datasets.MNIST(data_dir, train=False, download=to_download, transform=eval_transform)
     
     return train_dataset, val_dataset, test_dataset
