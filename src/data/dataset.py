@@ -10,8 +10,7 @@ def get_dataloaders(
         data_dir: str| Path = "./data",
         batch_size: int = 64,
         split_ratios: list[int | float] | tuple[int | float, ...] = (0.8, 0.1, 0.1),
-        seed: int = 42,
-        num_workers: int = 0
+        seed: int = 42
 ) -> tuple[DataLoader, DataLoader, DataLoader]:
     transforms_dict = get_transforms()
     train_transform = transforms_dict['train']
@@ -35,18 +34,10 @@ def get_dataloaders(
     val_dataset = Subset(val_data, indices=val_indices)
     test_dataset = Subset(test_data, indices=test_indices)
 
-
-    # # Set up num_workers automatically if not provided
-    # if num_workers is None:
-    #     # Default to 4 or the number of CPU cores available (whichever is lower)
-    #     num_workers = min(4, os.cpu_count() or 1)
-    #     print(f"Auto-configured DataLoaders to use {num_workers} worker processes.")
-
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
         shuffle=True,
-        num_workers=num_workers,
         pin_memory=True
     )
 
@@ -54,7 +45,6 @@ def get_dataloaders(
         val_dataset,
         batch_size=batch_size,
         shuffle=False,
-        num_workers=num_workers,
         pin_memory=True
     )
 
@@ -62,7 +52,6 @@ def get_dataloaders(
         test_dataset,
         batch_size=batch_size,
         shuffle=False,
-        num_workers=num_workers,
         pin_memory=True
     )
 
@@ -73,8 +62,7 @@ def get_MNIST_loaders(
         download: bool = True,
         batch_size: int = 64,
         split_ratios: list[int | float] | tuple[int | float, ...] = (50000, 10000),
-        seed: int = 42,
-        num_workers: int = 0
+        seed: int = 42
 ) -> tuple[DataLoader, DataLoader, DataLoader]:
 
     transforms_dict = get_transforms()
@@ -103,7 +91,6 @@ def get_MNIST_loaders(
         train_dataset,
         batch_size=batch_size,
         shuffle=True,
-        num_workers=num_workers,
         pin_memory=True
     )
 
@@ -111,7 +98,6 @@ def get_MNIST_loaders(
         val_dataset,
         batch_size=batch_size,
         shuffle=False,
-        num_workers=num_workers,
         pin_memory=True
     )
 
@@ -119,7 +105,6 @@ def get_MNIST_loaders(
         test_dataset,
         batch_size=batch_size,
         shuffle=False,
-        num_workers=num_workers,
         pin_memory=True
     )
 
