@@ -1,9 +1,18 @@
 import torch
+
+from pathlib import Path
 from torch.utils.data import DataLoader, random_split, Subset
 from torchvision import datasets
 from src.data.transforms import get_transforms
 
-def get_dataloaders(data_dir="./data", batch_size=64, split_ratios=[0.8, 0.1, 0.1], seed=42, num_workers=0):
+
+def get_dataloaders(
+        data_dir: str| Path = "./data",
+        batch_size: int = 64,
+        split_ratios: list[int | float] | tuple[int | float, ...] = (0.8, 0.1, 0.1),
+        seed: int = 42,
+        num_workers: int = 0
+) -> tuple[DataLoader, DataLoader, DataLoader]:
     transforms_dict = get_transforms()
     train_transform = transforms_dict['train']
     eval_transform = transforms_dict['eval']
@@ -32,6 +41,63 @@ def get_dataloaders(data_dir="./data", batch_size=64, split_ratios=[0.8, 0.1, 0.
     #     # Default to 4 or the number of CPU cores available (whichever is lower)
     #     num_workers = min(4, os.cpu_count() or 1)
     #     print(f"Auto-configured DataLoaders to use {num_workers} worker processes.")
+
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers,
+        pin_memory=True
+    )
+
+    val_loader = DataLoader(
+        val_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+        pin_memory=True
+    )
+
+    test_loader = DataLoader(
+        test_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+        pin_memory=True
+    )
+
+    return train_loader, val_loader, test_loader
+
+def get_MNIST_loaders(
+        data_dir: str | Path = "./data",
+        download: bool = True,
+        batch_size: int = 64,
+        split_ratios: list[int | float] | tuple[int | float, ...] = (50000, 10000),
+        seed: int = 42,
+        num_workers: int = 0
+) -> tuple[torch.utils.data.Dataset, torch.utils.data.Dataset]:
+
+    transforms_dict = get_transforms()
+    train_transform = transforms_dict['train']
+    eval_transform = transforms_dict['eval']
+
+    train_dataset_full = datasets.MNIST(data_dir, train=True, download=download, transform=train_transform)
+    val_dataset_full = datasets.MNIST(data_dir, train=True, download=download, transform=eval_transform)
+
+    split_indices = range(len(train_dataset_full))
+    generator = torch.Generator().manual_seed(seed)
+    train_indices, val_indices = random_split(
+        dataset=split_indices,
+        lengths=split_ratios,
+        generator=generator
+    )
+
+    train_data = Subset(train_dataset_full, train_indices)
+    val_data = Subset(val_dataset_full, val_indices)
+    train_dataset = Subset(train_data, indices=train_indices)
+    val_dataset = Subset(val_data, indices=val_indices)
+
+    test_dataset = datasets.MNIST(data_dir, train=False, download=download, transform=eval_transform)
 
     train_loader = DataLoader(
         train_dataset,
