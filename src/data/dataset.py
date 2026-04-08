@@ -113,25 +113,11 @@ def get_MNIST_loaders(
 
     test_dataset = datasets.MNIST(data_dir, train=False, download=download, transform=eval_transform)
 
-    train_loader = DataLoader(
+    train_loader, val_loader, test_loader = _get_loaders(
         train_dataset,
-        batch_size=batch_size,
-        shuffle=True,
-        pin_memory=True
-    )
-
-    val_loader = DataLoader(
         val_dataset,
-        batch_size=batch_size,
-        shuffle=False,
-        pin_memory=True
-    )
-
-    test_loader = DataLoader(
         test_dataset,
-        batch_size=batch_size,
-        shuffle=False,
-        pin_memory=True
+        batch_size=batch_size
     )
 
     return train_loader, val_loader, test_loader
