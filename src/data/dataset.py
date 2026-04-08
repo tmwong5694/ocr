@@ -53,11 +53,8 @@ def _get_mnist_datasets(
         generator=generator
     )
 
-    train_data = Subset(train_dataset_full, train_indices)
-    val_data = Subset(val_dataset_full, val_indices)
-    train_dataset = Subset(train_data, indices=train_indices)
-    val_dataset = Subset(val_data, indices=val_indices)
-
+    train_dataset = Subset(train_dataset_full, indices=train_indices)
+    val_dataset = Subset(val_dataset_full, indices=val_indices)
     test_dataset = datasets.MNIST(data_dir, train=False, download=to_download, transform=eval_transform)
     
     return train_dataset, val_dataset, test_dataset
