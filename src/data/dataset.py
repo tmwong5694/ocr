@@ -1,7 +1,8 @@
 import torch
 
 from pathlib import Path
-from torch.utils.data import DataLoader, random_split, Subset, Dataset
+from sklearn.model_selection import train_test_split
+from torch.utils.data import DataLoader, Subset, Dataset
 from torchvision import datasets
 from src.data.transforms import get_transforms
 
@@ -12,30 +13,56 @@ def _get_imagefolder_datasets(
         split_ratio: list[int | float],
         seed: int = 42
 ) -> tuple[Dataset, Dataset, Dataset]:
+    """
+    For image folder, the data is expected to undergo a three-way train-val-test split.
 
+    Args:
+        data_dir (str | Path): Directory with images
+        train_transform (torchvision.transforms.Compose): Image transformation
+        eval_transform (torchvision.transforms.Compose): Image transformation
+        split_ratio (list[int | float]): Ratio of images to use for training, validation and testing
+        seed (int): Random seed
+
+    Return:
+        tuple[Dataset, Dataset, Dataset]: Split train dataset, val dataset, test dataset
+    """
     # Instantiate all at once with respective transformation method
     train_data = datasets.ImageFolder(root=data_dir, transform=train_transform)
     val_data = datasets.ImageFolder(root=data_dir, transform=eval_transform)
     test_data = datasets.ImageFolder(root=data_dir, transform=eval_transform)
 
-    # Convert list of integers into list of floats
+    targets = train_data.targets
+    indices = range(len(targets))
+
+    # Calculate the split ratio in float, not whole numbers
     ratio_sum = sum(split_ratio)
-    split_ratio = [ele / ratio_sum for ele in split_ratio]
+    val_pct = split_ratio[1] / ratio_sum
+    test_pct = split_ratio[2] / ratio_sum
 
-    total_len = len(train_data)
-    train_len = int(total_len * split_ratio[0])
-    val_len = int(total_len * split_ratio[1])
+    # Split out the test_idx first
+    # train_val_idx contains indices of train part + val part
+    train_val_idx, test_idx = train_test_split(
+        indices,
+        test_size=test_pct,
+        stratify=targets,
+        random_state=seed
+    )
+    # Get the class labels and parse into train_test_split for splitting
+    train_val_targets = [targets[i] for i in train_val_idx]
+    # Get the proportion of val of the remaining indices of (train + val)
+    val_relative_pct = val_pct / (1.0 - test_pct)
 
-    generator = torch.Generator().manual_seed(seed)
-    indices = torch.randperm(total_len, generator=generator).tolist()
+    # Split the train and val indices
+    train_idx, val_idx = train_test_split(
+        train_val_idx,
+        test_size=val_relative_pct,
+        stratify=train_val_targets,
+        random_state=seed
+    )
 
-    train_indices = indices[:train_len]
-    val_indices = indices[train_len: train_len + val_len]
-    test_indices = indices[train_len + val_len:] # Open to ensure three ratios sum up to 100%
-
-    train_dataset = Subset(train_data, indices=train_indices)
-    val_dataset = Subset(val_data, indices=val_indices)
-    test_dataset = Subset(test_data, indices=test_indices)
+    train_dataset = Subset(train_data, indices=train_idx)
+    val_dataset = Subset(val_data, indices=val_idx)
+    test_dataset = Subset(test_data, indices=test_idx)
 
     return train_dataset, val_dataset, test_dataset
 
