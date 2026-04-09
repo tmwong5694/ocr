@@ -20,10 +20,10 @@ def _get_imagefolder_datasets(
         data_dir (str | Path): Directory with images
         train_transform (torchvision.transforms.Compose): Image transformation
         eval_transform (torchvision.transforms.Compose): Image transformation
-        split_ratio (list[int | float]): Ratio of images to use for training, validation and testing
-        seed (int): Random seed
+        split_ratio (list[int | float]): Ratio of images to use for training, validation and testing. Must be of length 3.
+        seed (int): Random seed. Defaults to 42.
 
-    Return:
+    Returns:
         tuple[Dataset, Dataset, Dataset]: Split train dataset, val dataset, test dataset
     """
     # Instantiate all at once with respective transformation method
@@ -74,23 +74,43 @@ def _get_mnist_datasets(
         split_ratio: list[int | float],
         seed: int = 42
 ) -> tuple[Dataset, Dataset, Dataset]:
+    """
+    The MNIST are presplit with training and testing dataset.
+    The function requires a two-way split of the training dataset into train and validation dataset.
+
+    Args:
+        data_dir (str | Path): Directory with images
+        train_transform (torchvision.transforms.Compose): Image transformation
+        eval_transform (torchvision.transforms.Compose): Image transformation
+        split_ratio (list[int | float]): Ratio of images to use for training, validation (and testing). Expect the length of 2
+        seed (int): Random seed. Defaults to 42.
+
+    Returns:
+        tuple[Dataset, Dataset, Dataset]: Split train dataset, val dataset, test dataset
+    """
     to_download = True
     train_dataset_full = datasets.MNIST(data_dir, train=True, download=to_download, transform=train_transform)
     val_dataset_full = datasets.MNIST(data_dir, train=True, download=to_download, transform=eval_transform)
 
+    # Class labels and indices
+    targets = train_dataset_full.targets
+    indices = range(len(targets))
 
     # Convert list of integers into list of floats
-    ratio_sum = sum(split_ratio)
-    split_ratio = [ele/ratio_sum for ele in split_ratio]
+    # Only take first two elements in case 3 ratios are parsed in
+    ratio_sum = sum(split_ratio[:2])
+    test_pct = split_ratio[1] / ratio_sum
 
-    total_len = len(train_dataset_full)
-    train_len = int(total_len * split_ratio[0])
+    # Split the train indices and validation indices
+    train_idx, val_idx = train_test_split(
+        indices,
+        test_size=test_pct,
+        stratify=targets,
+        random_state=seed
+    )
 
-    generator = torch.Generator().manual_seed(seed)
-    indices = torch.randperm(total_len, generator=generator).tolist()
-
-    train_dataset = Subset(train_dataset_full, indices=indices[:train_len])
-    val_dataset = Subset(val_dataset_full, indices=indices[train_len:])
+    train_dataset = Subset(train_dataset_full, indices=train_idx)
+    val_dataset = Subset(val_dataset_full, indices=val_idx)
     test_dataset = datasets.MNIST(data_dir, train=False, download=to_download, transform=eval_transform)
     
     return train_dataset, val_dataset, test_dataset
