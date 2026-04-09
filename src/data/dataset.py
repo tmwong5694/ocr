@@ -31,6 +31,7 @@ def _get_imagefolder_datasets(
     val_data = datasets.ImageFolder(root=data_dir, transform=eval_transform)
     test_data = datasets.ImageFolder(root=data_dir, transform=eval_transform)
 
+    # Class labels and indices
     targets = train_data.targets
     indices = range(len(targets))
 
@@ -73,7 +74,6 @@ def _get_mnist_datasets(
         split_ratio: list[int | float],
         seed: int = 42
 ) -> tuple[Dataset, Dataset, Dataset]:
-    
     to_download = True
     train_dataset_full = datasets.MNIST(data_dir, train=True, download=to_download, transform=train_transform)
     val_dataset_full = datasets.MNIST(data_dir, train=True, download=to_download, transform=eval_transform)
