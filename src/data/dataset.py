@@ -170,22 +170,25 @@ def get_dataloaders(
     train_transform = transforms_dict['train']
     eval_transform = transforms_dict['eval']
 
-    if dataset_name.lower() in ("imagefolder", "image_folder"):
-        train_dataset, val_dataset, test_dataset = _get_imagefolder_datasets(
-            data_dir=data_dir,
-            train_transform=train_transform,
-            eval_transform=eval_transform,
-            split_ratio=split_ratio,
-            seed=seed
-        )
-    elif dataset_name.lower() == "mnist":
-        train_dataset, val_dataset, test_dataset = _get_mnist_datasets(
-            data_dir=data_dir,
-            train_transform=train_transform,
-            eval_transform=eval_transform,
-            split_ratio=split_ratio,
-            seed=seed
-        )
+    DATASET_DISPATCH = {
+        'mnist': _get_mnist_datasets,
+        "imagefolder": _get_imagefolder_datasets
+    }
+
+    dataset_name_lower = dataset_name.lower()
+    dispatched_func = DATASET_DISPATCH.get(dataset_name_lower)
+
+    if dispatched_func is None:
+        valid_keys = list(DATASET_DISPATCH.keys())
+        raise ValueError(f"Dataset '{dataset_name}' is not supported. Available options: {valid_keys}")
+
+    train_dataset, val_dataset, test_dataset = dispatched_func(
+        data_dir=data_dir,
+        train_transform=train_transform,
+        eval_transform=eval_transform,
+        split_ratio=split_ratio,
+        seed=seed
+    )
 
     train_loader, val_loader, test_loader = _get_loaders(
         train_dataset,
