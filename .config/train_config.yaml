@@ -4,6 +4,7 @@ run_name: "run_14"
 seed: 42
 
 data:
+  dataset_name: "imagefolder"
   dataset_dir: "./data/cats_vs_dogs"
   batch_size: 64
   num_workers: 0
