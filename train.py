@@ -49,10 +49,11 @@ def main(config_path: Path | str) -> None:
     # 2. Data Pipeline
     logger.info("Loading datasets...")
     train_loader, val_loader, test_loader = get_dataloaders(
+        dataset_name=cfg['data']['dataset_name'],
         data_dir=cfg['data']['dataset_dir'],
+        split_ratio = [0.8, 0.1, 0.1],
         batch_size=cfg['data']['batch_size'],
         seed=cfg['seed'],
-        num_workers=cfg['data']['num_workers']
     )
 
     # Extract class_to_idx mapping
