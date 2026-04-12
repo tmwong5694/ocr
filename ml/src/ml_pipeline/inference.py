@@ -4,9 +4,9 @@ import torch.nn.functional as F
 from PIL import Image
 from pathlib import Path
 
-from ml_pipeline.models.factory import get_model
 from ml_pipeline.data.dataset import get_transforms
-
+from ml_pipeline.models.factory import get_model
+from ml_pipeline.utils.config import load_config
 
 
 def infer_image(
@@ -90,24 +90,26 @@ def cli_main():
     # 1. Setup argument parser so you can pass different images from the terminal
     parser = argparse.ArgumentParser(description="Run inference on an image")
     parser.add_argument(
+        "--config",
+        type=str,
+        default="ml/.config/train_config.yaml",
+        help="Path to the config file containing model details"
+    )
+    parser.add_argument(
         "--image",
         type=str,
-        default="ml/samples/corgi.png",
+        required=True,  # Make this required since the Makefile provides it
         help="Path to the image relative to the monorepo root"
     )
-    parser.add_argument(
-        "--weights",
-        type=str,
-        default="ml/experiments/cat_dog_classifier/run_15/checkpoints/best_model.pth",
-        help="Path to the model weights"
-    )
-    parser.add_argument(
-        "--model",
-        type=str,
-        default="catdogclassifier",
-        help="Name of the model architecture"
-    )
     args = parser.parse_args()
+
+    # 1. Load config
+    cfg = load_config(args.config)
+
+    # Reconstruct the weights path exactly like you did in test.py
+    experiment_dir = Path(cfg['paths']['experiments_root']) / cfg['experiment_name'] / cfg['run_name']
+    weights_path = experiment_dir / cfg['paths'].get('checkpoints_dirname', 'checkpoints') / "best_model.pth"
+    model_name = cfg['model']['name']
 
     # 2. Determine device
     if torch.backends.mps.is_available():
@@ -117,17 +119,13 @@ def cli_main():
     else:
         DEVICE = torch.device("cpu")
 
-    # 3. Resolve paths
-    image_path = Path(args.image)
-    weights_path = Path(args.weights)
-
-    # 4. Run inference
+    # 3. Run inference
     try:
         predicted_class, confidence = infer_image(
-            image_path=image_path,
+            image_path=args.image,
             weights_path=weights_path,
             device=DEVICE,
-            model_name=args.model
+            model_name=model_name
         )
         print(f"predicted class: {predicted_class}, probability: {confidence:.2f}%")
 
