@@ -2,12 +2,13 @@ from pathlib import Path
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Subset, Dataset
 from torchvision import datasets
+from torchvision.transforms.v2 import Transform
 from ml_pipeline.data.transforms import get_transforms
 
 def _get_imagefolder_datasets(
         data_dir: str | Path,
-        train_transform,
-        eval_transform,
+        train_transform: Transform,
+        eval_transform: Transform,
         split_ratio: list[int | float],
         seed: int = 42
 ) -> tuple[Dataset, Dataset, Dataset]:
