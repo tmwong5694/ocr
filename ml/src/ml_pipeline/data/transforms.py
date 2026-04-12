@@ -27,3 +27,23 @@ def get_transforms(img_size: int = 224) -> dict[str, v2.Compose]:
     ])
 
     return {"train": train_transform, "eval": eval_transform}
+
+
+def get_mnist_transforms() -> dict[str, v2.Compose]:
+    # Normalized values of black pixels
+    normalize = v2.Normalize(mean=[0.1307], std=[0.3081])
+
+    train_transform = v2.Compose([
+        v2.RandomRotation(degrees=15),
+        v2.ToImage(),
+        v2.ToDtype(torch.float32, scale=True),
+        normalize
+    ])
+
+    eval_transform = v2.Compose([
+        v2.ToImage(),
+        v2.ToDtype(torch.float32, scale=True),
+        normalize
+    ])
+
+    return {"train": train_transform, "eval": eval_transform}
