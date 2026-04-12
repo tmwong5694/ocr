@@ -16,8 +16,8 @@ def _get_imagefolder_datasets(
 
     Args:
         data_dir (str | Path): Directory with images
-        train_transform (torchvision.transforms.Compose): Image transformation
-        eval_transform (torchvision.transforms.Compose): Image transformation
+        train_transform (torchvision.transforms.v2.Transform): Image transformation
+        eval_transform (torchvision.transforms.v2.Transform): Image transformation
         split_ratio (list[int | float]): Ratio of images to use for training, validation and testing. Must be of length 3.
         seed (int): Random seed. Defaults to 42.
 
