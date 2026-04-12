@@ -3,7 +3,7 @@ import torch.nn as nn
 
 class CatDogClassifier(nn.Module):
 
-    def __init__(self, num_classes=10):
+    def __init__(self, num_classes: int = 10):
         super().__init__()
         
         self.features = nn.Sequential(
