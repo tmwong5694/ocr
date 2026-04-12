@@ -3,7 +3,7 @@ from torchvision.models import resnet18, ResNet18_Weights
 
 class TransferResNet(nn.Module):
 
-    def __init__(self, num_classes=2, freeze=False):
+    def __init__(self, num_classes: int = 2, freeze: bool = False):
         super(TransferResNet, self).__init__()
         self.model = resnet18(weights=ResNet18_Weights.DEFAULT)
 
