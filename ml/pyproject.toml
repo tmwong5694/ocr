@@ -21,7 +21,7 @@ dependencies = [
 [project.scripts]
 ml-train = "ml_pipeline.train:cli_main"
 ml-test = "ml_pipeline.test:cli_main"
-ml-infer = "ml_pipeline.inference:cli_main"
+ml-infer = "ml_pipeline.infer:cli_main"
 ml-clean = "ml_pipeline.clean_data:main"
 
 [build-system]
