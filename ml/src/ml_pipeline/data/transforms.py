@@ -1,7 +1,8 @@
 import torch
 from torchvision.transforms import v2
 
-def get_transforms(img_size: int = 224) -> dict[v2.Transform, v2.Transform]:
+
+def get_transforms(img_size: int = 224) -> dict[str, v2.Compose]:
 
     normalize = v2.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     train_transform = v2.Compose([
