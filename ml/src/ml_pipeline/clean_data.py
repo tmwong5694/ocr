@@ -26,5 +26,8 @@ def clean_dataset(data_dir="./data"):
     print(f"Cleanup complete! Removed {corrupted_count} corrupted images.")
 
 
+def main():
+    clean_dataset(data_dir="ml/data")
+
 if __name__ == "__main__":
-    clean_dataset()
+    main()

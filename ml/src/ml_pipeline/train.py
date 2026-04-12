@@ -7,12 +7,12 @@ from loguru import logger
 from pathlib import Path
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-from src.data.dataset import get_dataloaders
-from src.engine.trainer import train_model
-from src.models.factory import get_model
-from src.utils.config import load_config
-from src.utils.early_stopping import EarlyStopping
-from src.utils.logger import set_loguru
+from ml_pipeline.data.dataset import get_dataloaders
+from ml_pipeline.engine.trainer import train_model
+from ml_pipeline.models.factory import get_model
+from ml_pipeline.utils.config import load_config
+from ml_pipeline.utils.early_stopping import EarlyStopping
+from ml_pipeline.utils.logger import set_loguru
 
 
 
@@ -121,15 +121,13 @@ def main(config_path: Path | str) -> None:
     logger.info("\nPipeline complete! Weights saved in '{}'.", save_path)
 
 
-if __name__ == "__main__":
-    # Set up argument parsing to accept the config file from the terminal
+def cli_main():
     parser = argparse.ArgumentParser(description="Train a PyTorch Image Classifier")
-    parser.add_argument(
-        "--config",
-        type=str,
-        default=Path(".config") / "train_config.yaml",
-        help="Path to the YAML configuration file"
-    )
-
+    # Because you will run this from the project root using `uv run`, update the path:
+    parser.add_argument("--config", type=str, default="ml/.config/train_config.yaml")
     args = parser.parse_args()
     main(args.config)
+
+
+if __name__ == "__main__":
+    cli_main()

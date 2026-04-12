@@ -1,4 +1,3 @@
-/data
-/logs
-/experiments
-/samples
+ml/data
+ml/experiments
+/ml/samples

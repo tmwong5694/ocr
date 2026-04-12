@@ -1,5 +1,5 @@
-from src.models.cat_dog_classifier import CatDogClassifier
-from src.models.transfer_resnet import TransferResNet
+from ml_pipeline.models.cat_dog_classifier import CatDogClassifier
+from ml_pipeline.models.transfer_resnet import TransferResNet
 
 def get_model(model_name: str, model_params: dict):
     model_name_clean = model_name.lower().replace("_", "")

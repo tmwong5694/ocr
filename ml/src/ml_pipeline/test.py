@@ -4,12 +4,12 @@ import torch.nn as nn
 from pathlib import Path
 from loguru import logger
 
-from src.data.dataset import get_dataloaders
-from src.models.factory import get_model
-from src.utils.config import load_config
-from src.utils.metrics import get_batch_accuracy
-from src.utils.plot import get_confusion_matrix, plot_confusion_matrix
-from src.utils.logger import set_loguru
+from ml_pipeline.data.dataset import get_dataloaders
+from ml_pipeline.models.factory import get_model
+from ml_pipeline.utils.config import load_config
+from ml_pipeline.utils.metrics import get_batch_accuracy
+from ml_pipeline.utils.plot import get_confusion_matrix, plot_confusion_matrix
+from ml_pipeline.utils.logger import set_loguru
 
 
 def evaluate_test_set(config_path: str | Path) -> None:
@@ -38,10 +38,11 @@ def evaluate_test_set(config_path: str | Path) -> None:
     # 2. Get Test Dataloader
     logger.info("Loading test dataset...")
     _, _, test_loader = get_dataloaders(
-        data_dir=cfg['data']['dataset_dir'],
-        batch_size=cfg['data']['batch_size'],
-        seed=cfg['seed'],
-        num_workers=cfg['data']['num_workers']
+        dataset_name=cfg["data"]["dataset_name"],
+        data_dir=cfg["data"]["dataset_dir"],
+        split_ratio = [0.8, 0.1, 0.1],
+        batch_size=cfg["data"]["batch_size"],
+        seed=cfg["seed"],
     )
 
     # 3. Model setup
@@ -97,8 +98,11 @@ def evaluate_test_set(config_path: str | Path) -> None:
         show=False
     )
 
-if __name__ == "__main__":
+def cli_main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", type=str, default=".config/train_config.yaml")
+    parser.add_argument("--config", type=str, default="ml/.config/train_config.yaml")
     args = parser.parse_args()
     evaluate_test_set(args.config)
+
+if __name__ == "__main__":
+    cli_main()

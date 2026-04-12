@@ -5,7 +5,7 @@ seed: 42
 
 data:
   dataset_name: "imagefolder"
-  dataset_dir: "./data/cats_vs_dogs"
+  dataset_dir: "ml/data/cats_vs_dogs"
   batch_size: 64
   num_workers: 0
 
@@ -29,7 +29,7 @@ training:
     min_lr: 0.000001
 
 paths:
-    experiments_root: "./experiments"
+    experiments_root: "ml/experiments"
     checkpoints_dirname: "checkpoints"
     logs_dirname: "logs"
     artifacts_dirname: "artifacts"

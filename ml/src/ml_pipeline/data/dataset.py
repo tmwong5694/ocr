@@ -1,10 +1,8 @@
-import torch
-
 from pathlib import Path
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Subset, Dataset
 from torchvision import datasets
-from src.data.transforms import get_transforms
+from ml_pipeline.data.transforms import get_transforms
 
 def _get_imagefolder_datasets(
         data_dir: str | Path,

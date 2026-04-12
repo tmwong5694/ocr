@@ -1,10 +1,11 @@
+import argparse
 import torch
 import torch.nn.functional as F
 from PIL import Image
 from pathlib import Path
 
-from src.models.factory import get_model
-from src.data.transforms import get_transforms
+from ml_pipeline.models.factory import get_model
+from ml_pipeline.data.dataset import get_transforms
 
 
 
@@ -85,8 +86,30 @@ def infer_image(
     return predicted_class, confidence_score
 
 
+def cli_main():
+    # 1. Setup argument parser so you can pass different images from the terminal
+    parser = argparse.ArgumentParser(description="Run inference on an image")
+    parser.add_argument(
+        "--image",
+        type=str,
+        default="ml/samples/corgi.png",
+        help="Path to the image relative to the monorepo root"
+    )
+    parser.add_argument(
+        "--weights",
+        type=str,
+        default="ml/experiments/cat_dog_classifier/run_15/checkpoints/best_model.pth",
+        help="Path to the model weights"
+    )
+    parser.add_argument(
+        "--model",
+        type=str,
+        default="catdogclassifier",
+        help="Name of the model architecture"
+    )
+    args = parser.parse_args()
 
-if __name__ == "__main__":
+    # 2. Determine device
     if torch.backends.mps.is_available():
         DEVICE = torch.device("mps")
     elif torch.cuda.is_available():
@@ -94,14 +117,23 @@ if __name__ == "__main__":
     else:
         DEVICE = torch.device("cpu")
 
-    sample_folder = Path("samples")
-    weight = Path("experiments") / "cat_dog_classifier" / "run_10" / "checkpoints" / "best_model.pth"
+    # 3. Resolve paths
+    image_path = Path(args.image)
+    weights_path = Path(args.weights)
 
-    predicted_class, confidence = infer_image(
-        image_path=sample_folder / "husky2.jpeg",
-        weights_path=weight,
-        device=DEVICE,
-        model_name="catdogclassifier"
-    )
+    # 4. Run inference
+    try:
+        predicted_class, confidence = infer_image(
+            image_path=image_path,
+            weights_path=weights_path,
+            device=DEVICE,
+            model_name=args.model
+        )
+        print(f"predicted class: {predicted_class}, probability: {confidence:.2f}%")
 
-    print(f"predicted class: {predicted_class}, probability: {confidence}")
+    except FileNotFoundError as e:
+        print(f"Error: {e}. Are you running this from the monorepo root?")
+
+
+if __name__ == "__main__":
+    cli_main()

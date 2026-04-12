@@ -3,11 +3,11 @@ import torch
 import torch.nn as nn
 from pathlib import Path
 from torch.utils.data import DataLoader
-from src.utils.plot import plot_loss
+from ml_pipeline.utils.plot import plot_loss
 from tqdm import tqdm
 
-from src.utils.early_stopping import EarlyStopping
-from src.utils.metrics import get_batch_accuracy
+from ml_pipeline.utils.early_stopping import EarlyStopping
+from ml_pipeline.utils.metrics import get_batch_accuracy
 from loguru import logger
 
 
