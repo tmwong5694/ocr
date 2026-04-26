@@ -3,7 +3,7 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Subset, Dataset
 from torchvision import datasets
 from torchvision.transforms.v2 import Transform
-from ml_pipeline.data.transforms import get_transforms
+from ml_pipeline.data.transforms import get_transforms_by_dataset
 
 def _get_imagefolder_datasets(
         data_dir: str | Path,
@@ -165,7 +165,7 @@ def get_dataloaders(
     if split_ratio is None:
         raise ValueError("Split ratio cannot be None")
 
-    transforms_dict = get_transforms()
+    transforms_dict = get_transforms_by_dataset(dataset_name)
     train_transform = transforms_dict['train']
     eval_transform = transforms_dict['eval']
 

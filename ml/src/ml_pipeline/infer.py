@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from PIL import Image
 from pathlib import Path
 
-from ml_pipeline.data.dataset import get_transforms
+from ml_pipeline.data.transforms import get_transforms_by_dataset
 from ml_pipeline.models.factory import get_model
 from ml_pipeline.utils.config import load_config
 
@@ -13,7 +13,8 @@ def infer_image(
         image_path: Path | str,
         weights_path: Path | str,
         device: torch.device,
-        model_name: str
+        model_name: str,
+        dataset_name: str = "imagefolder"
 ) -> tuple[str, float]:
     """
     Infer an image using a trained model.
@@ -59,7 +60,7 @@ def infer_image(
     model.eval()
 
     # Get eval transformation
-    eval_transform = get_transforms()['eval']
+    eval_transform = get_transforms_by_dataset(dataset_name)['eval']
 
     try:
         # Convert to RGB to guarantee 3 channels
@@ -125,7 +126,8 @@ def cli_main():
             image_path=args.image,
             weights_path=weights_path,
             device=DEVICE,
-            model_name=model_name
+            model_name=model_name,
+            dataset_name=cfg['dataset']['name']
         )
         print(f"predicted class: {predicted_class}, probability: {confidence:.2f}%")
 

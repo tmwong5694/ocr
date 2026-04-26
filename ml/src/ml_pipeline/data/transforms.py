@@ -47,3 +47,20 @@ def get_mnist_transforms() -> dict[str, v2.Compose]:
     ])
 
     return {"train": train_transform, "eval": eval_transform}
+
+
+TRANSFORM_DISPATCH = {
+    "mnist": get_mnist_transforms,
+    "imagefolder": get_transforms
+}
+
+def get_transforms_by_dataset(dataset_name: str) -> dict[str, v2.Compose]:
+    """Retrieve the corresponding transform based on the dataset name."""
+    dataset_name_lower = dataset_name.lower()
+    dispatched_func = TRANSFORM_DISPATCH.get(dataset_name_lower)
+    
+    if dispatched_func is None:
+        valid_keys = list(TRANSFORM_DISPATCH.keys())
+        raise ValueError(f"Transforms for dataset '{dataset_name}' are not supported. Available: {valid_keys}")
+        
+    return dispatched_func()
