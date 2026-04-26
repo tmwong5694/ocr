@@ -1,23 +1,25 @@
-experiment_name: "cat_dog_classifier"
+#experiment_name: "cat_dog_classifier"
 #experiment_name: "transfer_resnet"
-run_name: "run_14"
+experiment_name: "mnist_classifier"
+run_name: "run_01"
 seed: 42
 
 data:
-  dataset_name: "imagefolder"
-  dataset_dir: "ml/data/cats_vs_dogs"
+  dataset_name: "mnist"
+  dataset_dir: "ml/data"
   batch_size: 64
   num_workers: 0
 
 model:
-  name: "CatDogClassifier"
+#  name: "CatDogClassifier"
 #  name: "TransferResNet"
+  name: "mnistclassifier"
   params:
-    num_classes: 2
-    freeze: true
+    num_classes: 10
+#    freeze: true
 
 training:
-  num_epochs: 100
+  num_epochs: 10
   early_stop_patience: 15
   optimizer:
     name: "Adam"
