@@ -25,5 +25,5 @@ ml-infer = "ml_pipeline.infer:cli_main"
 ml-clean = "ml_pipeline.clean_data:main"
 
 [build-system]
-requires = ["uv_build>=0.11.6,<0.12"]
-build-backend = "uv_build"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
