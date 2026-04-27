@@ -72,21 +72,24 @@ def detect_cats_and_dogs(
 def cli_main():
     parser = argparse.ArgumentParser(description="Run YOLO object detection on an image")
     parser.add_argument("--config", default="ml/.config/detect.yaml", help="Path to the config file (detect.yaml)")
-    parser.add_argument("--image", required=True, help="Path to the input image")
     args = parser.parse_args()
 
     config = load_config(args.config)
 
-    # Extract params like:
+    # Extract params from config
     thresh = config.get('model', {}).get('confidence_threshold', 0.5)
     classes = config.get('inference', {}).get('target_classes', [15, 16])
     model_weight = Path(config.get('model', {}).get('weights', 'ml/src/ml_pipeline/models/yolov8n.pt'))
+    image_path = config.get('image')
+    
+    if not image_path:
+        raise ValueError("Image path not specified in detect.yaml config file")
     
     # Generate a sensible output path based on the input name
-    out_path = Path(args.image).stem + "_detected.jpg"
+    out_path = Path(image_path).stem + "_detected.jpg"
 
     detect_cats_and_dogs(
-        image_path=args.image,
+        image_path=image_path,
         model_path=model_weight,
         output_path=out_path,
         confidence_threshold=thresh,

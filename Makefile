@@ -25,7 +25,7 @@ infer:
 	uv run ml-infer --config $(CONFIG) --image $(IMAGE)
 
 detect:
-	uv run ml-detect --config $(DETECT_CONFIG) --image $(IMAGE)
+	uv run ml-detect --config $(DETECT_CONFIG)
 
 clean-data:
 	uv run ml-clean
