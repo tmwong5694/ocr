@@ -1,0 +1,14 @@
+model:
+  weights: "ml/src/ml_pipeline/models/yolov8n.pt"
+  confidence_threshold: 0.50
+  iou_threshold: 0.45
+
+image: "ml/samples/husky.jpeg"
+
+inference:
+  target_classes: [15, 16] # COCO classes: 15=cat, 16=dog
+  box_thickness: 2
+  text_scale: 0.6
+  colors:
+    cat: [255, 0, 0] # BGR
+    dog: [0, 255, 0]
