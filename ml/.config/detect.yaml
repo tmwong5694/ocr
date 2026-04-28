@@ -3,7 +3,7 @@ model:
   confidence_threshold: 0.50
   iou_threshold: 0.45
 
-image: "ml/samples/tiger.jpeg"
+image: "ml/samples/husky2.jpeg"
 
 inference:
   target_classes: [15, 16] # COCO classes: 15=cat, 16=dog

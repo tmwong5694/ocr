@@ -85,8 +85,12 @@ def cli_main():
     if not image_path:
         raise ValueError("Image path not specified in detect.yaml config file")
     
+    # Create output directory following industry standards
+    output_dir = Path("ml/outputs/detections")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
     # Generate a sensible output path based on the input name
-    out_path = Path(image_path).stem + "_detected.jpg"
+    out_path = output_dir / (Path(image_path).stem + "_detected.jpg")
 
     detect_cats_and_dogs(
         image_path=image_path,

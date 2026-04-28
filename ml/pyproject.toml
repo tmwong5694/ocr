@@ -25,7 +25,7 @@ ml-train = "ml_pipeline.train:cli_main"
 ml-test = "ml_pipeline.test:cli_main"
 ml-infer = "ml_pipeline.infer:cli_main"
 ml-clean = "ml_pipeline.clean_data:main"
-ml-detect = "ml_pipeline.detect:cli_main"
+ml-detect = "ml_pipeline.detect_animal:cli_main"
 
 [build-system]
 requires = ["hatchling"]
