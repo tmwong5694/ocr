@@ -1,4 +1,5 @@
 ml/data
 ml/experiments
 /ml/samples
+ml/outputs
 *.pt
