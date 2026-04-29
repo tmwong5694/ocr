@@ -3,11 +3,23 @@ import torch
 from shared.src.shared_utils.timer import timer
 from transformers import AutoProcessor, AutoModelForImageTextToText
 from loguru import logger
+from ml_pipeline.utils.config import load_config
 
-MODEL_PATH = "zai-org/GLM-OCR"
-DEVICE = "mps" if torch.backends.mps.is_available() else "cpu"
-DEFAULT_IMAGE_PATH = "ml/data/prescription/Training/training_words/0.png"
-MAX_TOKENS = 8192
+# Load configuration from YAML
+_CONFIG_PATH = Path(__file__).parent / "detect_config.yaml"
+_CONFIG = load_config(_CONFIG_PATH)
+_GLM_CONFIG = _CONFIG.get("glm_ocr", {})
+
+# Configuration values from detect_config.yaml
+MODEL_PATH = _GLM_CONFIG.get("model_path", "zai-org/GLM-OCR")
+DEFAULT_IMAGE_PATH = _GLM_CONFIG.get("default_image_path", "ml/data/prescription/Training/training_words/0.png")
+MAX_TOKENS = _GLM_CONFIG.get("max_tokens", 8192)
+DEFAULT_PROMPT = _GLM_CONFIG.get("prompt", "Text Recognition:")
+
+# Auto-detect device if set to "auto"
+DEVICE = _GLM_CONFIG.get("device", "auto")
+if DEVICE == "auto":
+    DEVICE = "mps" if torch.backends.mps.is_available() else "cpu"
 
 class GLMOCRModel:
     def __init__(self, model_path: str = MODEL_PATH, device: str = DEVICE):
@@ -51,14 +63,14 @@ class GLMOCRModel:
     def recognize_text(
             self,
             image_path: str,
-            prompt: str = "Text Recognition:"
+            prompt: str = None
     ) -> str:
         """
         Recognize text from an image.
 
         Args:
             image_path: Path to the image file
-            prompt: Prompt for the model
+            prompt: Prompt for the model (defaults to config value)
 
         Returns:
             Recognized text
@@ -67,6 +79,9 @@ class GLMOCRModel:
             ValueError: If model is not loaded
             FileNotFoundError: If image file does not exist
         """
+        if prompt is None:
+            prompt = DEFAULT_PROMPT
+            
         if self.model is None or self.processor is None:
             raise ValueError("Model not loaded. Call load_model() first.")
 

@@ -1,0 +1,18 @@
+# GLM-OCR Detection Configuration
+glm_ocr:
+  # Model configuration
+  model_path: "zai-org/GLM-OCR"
+  
+  # Device configuration (auto-detect if not specified)
+  # Options: cpu, cuda, mps (Apple Silicon)
+  device: "auto"
+  
+  # Generation parameters
+  max_tokens: 8192
+  
+  # Default inference parameters
+  prompt: "Text Recognition:"
+  
+  # Default test image path
+  default_image_path: "ml/data/prescription/Training/training_words/0.png"
+
