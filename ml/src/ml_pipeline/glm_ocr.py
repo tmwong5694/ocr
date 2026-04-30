@@ -6,7 +6,7 @@ from loguru import logger
 from ml_pipeline.utils.config import load_config
 
 # Load configuration from YAML
-_CONFIG_PATH = Path(__file__).parent / "detect_config.yaml"
+_CONFIG_PATH = Path(__file__).parent.parent.parent / ".config" / "detect_config.yaml"
 _CONFIG = load_config(_CONFIG_PATH)
 _GLM_CONFIG = _CONFIG.get("glm_ocr", {})
 
