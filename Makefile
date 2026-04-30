@@ -1,6 +1,6 @@
 # Default configuration path
 CONFIG ?= ml/.config/train_config.yaml
-DETECT_CONFIG ?= ml/.config/detect.yaml
+DETECT_CONFIG ?= ml/.config/yolo_config.yaml
 IMAGE ?= ml/samples/husky.jpeg
 
 .PHONY: help train clean-data
@@ -12,7 +12,7 @@ help:
 	@echo "  make test				    - Run the testing pipeline with the default config"
 	@echo "  make infer IMAGE=path.png  - Run inference on a specific image"
 	@echo "  make clean-data            - Scan and remove corrupted images from the dataset"
-	@echo "  make detect IMAGE=path.png - Run YOLO object detection locally using detect.yaml"
+	@echo "  make label IMAGE=path.png - Run YOLO object detection locally using detect.yaml"
 
 
 train:
@@ -24,8 +24,8 @@ test:
 infer:
 	uv run ml-infer --config $(CONFIG) --image $(IMAGE)
 
-detect:
-	uv run ml-detect --config $(DETECT_CONFIG)
+label:
+	uv run ml-label --config $(DETECT_CONFIG)
 
 clean-data:
 	uv run ml-clean
