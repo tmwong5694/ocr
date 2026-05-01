@@ -6,10 +6,10 @@ ocr_model:
   # Device configuration (auto-detect if not specified)
   # Options: cpu, cuda, mps (Apple Silicon), auto
   device: "mps"
-  
+
   # Generation parameters
   max_tokens: 8192
-  
+
   # Default inference parameters
   prompt: "Text Recognition:"
   
