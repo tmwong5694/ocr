@@ -1,6 +1,6 @@
 from pathlib import Path
 import torch
-from shared.src.shared_utils.timer import timer
+from shared_utils.timer import timer
 from transformers import AutoProcessor, AutoModelForImageTextToText
 from loguru import logger
 from ml_pipeline.utils.config import load_config

@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "huggingface-hub>=0.23.0",
     "loguru>=0.7.3",
     "matplotlib>=3.10.6",
     "pandas>=3.0.1",
@@ -12,10 +13,12 @@ dependencies = [
     "pyyaml>=6.0.3",
     "scikit-learn>=1.8.0",
     "seaborn>=0.13.2",
+    "shared_utils",
     "torch>=2.8.0",
     "torchmetrics>=1.9.0",
     "torchvision>=0.23.0",
     "tqdm>=4.67.3",
+    "transformers>=4.40.0",
     "ultralytics>=8.0.0",
     "opencv-python>=4.8.0",
 ]
@@ -23,9 +26,11 @@ dependencies = [
 [project.scripts]
 ml-train = "ml_pipeline.train:cli_main"
 ml-test = "ml_pipeline.test:cli_main"
+ml-infer = "ml_pipeline.infer:cli_main"
 ml-classify = "ml_pipeline.classify:cli_main"
 ml-clean = "ml_pipeline.clean_data:main"
 ml-label = "ml_pipeline.detect_animal:cli_main"
+ml-ocr = "ml_pipeline.detect_writing:cli_main"
 
 [build-system]
 requires = ["hatchling"]

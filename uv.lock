@@ -877,6 +877,7 @@ name = "ml-pipeline"
 version = "0.1.0"
 source = { editable = "ml" }
 dependencies = [
+    { name = "huggingface-hub" },
     { name = "loguru" },
     { name = "matplotlib" },
     { name = "opencv-python" },
@@ -885,15 +886,18 @@ dependencies = [
     { name = "pyyaml" },
     { name = "scikit-learn" },
     { name = "seaborn" },
+    { name = "shared-utils" },
     { name = "torch" },
     { name = "torchmetrics" },
     { name = "torchvision" },
     { name = "tqdm" },
+    { name = "transformers" },
     { name = "ultralytics" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "huggingface-hub", specifier = ">=0.23.0" },
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "matplotlib", specifier = ">=3.10.6" },
     { name = "opencv-python", specifier = ">=4.8.0" },
@@ -902,10 +906,12 @@ requires-dist = [
     { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "scikit-learn", specifier = ">=1.8.0" },
     { name = "seaborn", specifier = ">=0.13.2" },
+    { name = "shared-utils", editable = "shared" },
     { name = "torch", specifier = ">=2.8.0" },
     { name = "torchmetrics", specifier = ">=1.9.0" },
     { name = "torchvision", specifier = ">=0.23.0" },
     { name = "tqdm", specifier = ">=4.67.3" },
+    { name = "transformers", specifier = ">=4.40.0" },
     { name = "ultralytics", specifier = ">=8.0.0" },
 ]
 
