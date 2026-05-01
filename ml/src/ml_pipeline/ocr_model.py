@@ -22,7 +22,7 @@ if DEVICE == "auto":
     DEVICE = "mps" if torch.backends.mps.is_available() else "cpu"
 
 
-class FlexibleVisionLanguageOCR:
+class OCRModel:
     """
     Flexible vision-language model for OCR and image-to-text tasks.
     
@@ -195,26 +195,3 @@ class FlexibleVisionLanguageOCR:
     def switch_model(self, model_name: str) -> None:
         """Convenience method to switch to a different model."""
         self.load_model(model_name)
-
-
-def main():
-    """Main entry point for vision-language OCR inference."""
-    logger.info("Starting vision-language OCR inference")
-
-    # Initialize model
-    ocr_model = FlexibleVisionLanguageOCR()
-    ocr_model.load_model()
-
-    # Run inference
-    try:
-        result = ocr_model.recognize_text(DEFAULT_IMAGE_PATH)
-        logger.info(f"Recognition result: {result}")
-        print(result)
-    except Exception as e:
-        logger.error(f"Error during inference: {e}")
-        raise
-
-
-
-if __name__ == "__main__":
-    main()
