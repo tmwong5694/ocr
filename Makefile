@@ -10,8 +10,8 @@ help:
 	@echo "  make train                 - Run the training pipeline with the default config"
 	@echo "  make train CONFIG=path.yml - Run the training pipeline with a custom config"
 	@echo "  make test				    - Run the testing pipeline with the default config"
-	@echo "  make infer                 - Run inference on image specified in config"
-	@echo "  make infer CONFIG=path.yml - Run inference with custom config"
+	@echo "  make classify                 - Run inference on image specified in config"
+	@echo "  make classify CONFIG=path.yml - Run inference with custom config"
 	@echo "  make clean-data            - Scan and remove corrupted images from the dataset"
 	@echo "  make label                 - Run YOLO object detection on image specified in config"
 	@echo "  make label CONFIG=path.yml - Run YOLO detection with custom config"
@@ -25,8 +25,8 @@ train:
 test:
 	uv run ml-test --config $(CONFIG)
 
-infer:
-	uv run ml-infer --config $(CONFIG)
+classify:
+	uv run ml-classify --config $(CONFIG)
 
 label:
 	uv run ml-label --config $(DETECT_CONFIG)
