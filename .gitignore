@@ -3,3 +3,4 @@ ml/experiments
 /ml/samples
 ml/outputs
 *.pt
+.env
