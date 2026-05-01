@@ -1,11 +1,11 @@
-# GLM-OCR Detection Configuration
-glm_ocr:
-  # Model configuration
-  model_path: "zai-org/GLM-OCR"
+# Vision-Language OCR Detection Configuration
+ocr_model:
+  # Model configuration - supports any HuggingFace vision-language model
+  model_name: "zai-org/GLM-OCR"
   
   # Device configuration (auto-detect if not specified)
-  # Options: cpu, cuda, mps (Apple Silicon)
-  device: "auto"
+  # Options: cpu, cuda, mps (Apple Silicon), auto
+  device: "mps"
   
   # Generation parameters
   max_tokens: 8192
