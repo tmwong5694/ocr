@@ -34,6 +34,7 @@ def get_mnist_transforms() -> dict[str, v2.Compose]:
     normalize = v2.Normalize(mean=[0.1307], std=[0.3081])
 
     train_transform = v2.Compose([
+        v2.Resize((28, 28)),
         v2.RandomRotation(degrees=15),
         v2.ToImage(),
         v2.ToDtype(torch.float32, scale=True),
@@ -41,6 +42,7 @@ def get_mnist_transforms() -> dict[str, v2.Compose]:
     ])
 
     eval_transform = v2.Compose([
+        v2.Resize((28, 28)),
         v2.ToImage(),
         v2.ToDtype(torch.float32, scale=True),
         normalize
