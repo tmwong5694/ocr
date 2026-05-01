@@ -63,8 +63,14 @@ def infer_image(
     eval_transform = get_transforms_by_dataset(dataset_name)['eval']
 
     try:
-        # Convert to RGB to guarantee 3 channels
-        img = Image.open(image_path).convert('RGB')
+        # Load the image and convert to the appropriate number of channels based on dataset
+        img = Image.open(image_path)
+        
+        # MNIST expects grayscale (1 channel), others expect RGB (3 channels)
+        if dataset_name.lower() == "mnist":
+            img = img.convert('L')  # Convert to grayscale (1 channel)
+        else:
+            img = img.convert('RGB')  # Convert to RGB (3 channels)
     except FileNotFoundError:
         raise FileNotFoundError(f"Image at '{image_path}' does not exist")
     except Exception as e:
@@ -94,25 +100,24 @@ def cli_main():
         "--config",
         type=str,
         default="ml/.config/train_config.yaml",
-        help="Path to the config file containing model details"
-    )
-    parser.add_argument(
-        "--image",
-        type=str,
-        required=True,  # Make this required since the Makefile provides it
-        help="Path to the image relative to the monorepo root"
+        help="Path to the config file containing model details and image path"
     )
     args = parser.parse_args()
 
-    # 1. Load config
+    # Load config
     cfg = load_config(args.config)
 
-    # Reconstruct the weights path exactly like you did in test.py
+    # Get image path from config
+    image_path = cfg['data'].get('infer_path')
+    if not image_path:
+        raise ValueError("'infer_path' must be specified in the 'data' section of the config file")
+
+    # Reconstruct the weights path
     experiment_dir = Path(cfg['paths']['experiments_root']) / cfg['experiment_name'] / cfg['run_name']
     weights_path = experiment_dir / cfg['paths'].get('checkpoints_dirname', 'checkpoints') / "best_model.pth"
     model_name = cfg['model']['name']
 
-    # 2. Determine device
+    # Determine device
     if torch.backends.mps.is_available():
         DEVICE = torch.device("mps")
     elif torch.cuda.is_available():
@@ -120,14 +125,14 @@ def cli_main():
     else:
         DEVICE = torch.device("cpu")
 
-    # 3. Run inference
+    # Run inference
     try:
         predicted_class, confidence = infer_image(
-            image_path=args.image,
+            image_path=image_path,
             weights_path=weights_path,
             device=DEVICE,
             model_name=model_name,
-            dataset_name=cfg['dataset']['name']
+            dataset_name=cfg['data']['dataset_name']
         )
         print(f"predicted class: {predicted_class}, probability: {confidence:.2f}%")
 

@@ -9,6 +9,7 @@ data:
   dataset_dir: "ml/data"
   batch_size: 64
   num_workers: 0
+  infer_path: "ml/samples/IMG_3290.jpg"  # Path to image for inference
 
 model:
 #  name: "CatDogClassifier"
