@@ -179,10 +179,7 @@ class OCRModel:
         """
         try:
             tokens = max_tokens or MAX_TOKENS
-            generated_ids = self.model.generate(
-                **inputs,
-                max_new_tokens=tokens
-            )
+            generated_ids = self.model.generate(**inputs, max_new_tokens=tokens)
             output_text = self.processor.decode(
                 generated_ids[0][inputs["input_ids"].shape[1]:],
                 skip_special_tokens=True
