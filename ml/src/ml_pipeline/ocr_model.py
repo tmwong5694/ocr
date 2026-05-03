@@ -2,6 +2,7 @@ from pathlib import Path
 import torch
 from shared_utils.timer import timer
 from transformers import AutoProcessor, AutoModelForImageTextToText
+from typing import Literal
 from loguru import logger
 from ml_pipeline.utils.config import load_config
 
@@ -39,7 +40,7 @@ class OCRModel:
     def __init__(
         self,
         model_name: str = MODEL_NAME,
-        device: str = DEVICE,
+        device: Literal["cuda", "mps", "cpu"] = DEVICE,
         model_kwargs: dict = None
     ):
         """
