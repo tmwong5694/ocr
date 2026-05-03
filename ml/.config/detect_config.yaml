@@ -2,17 +2,18 @@
 ocr_model:
   # Model configuration - supports any HuggingFace vision-language model
   model_name: "zai-org/GLM-OCR"
-  
-  # Device configuration (auto-detect if not specified)
-  # Options: cpu, cuda, mps (Apple Silicon), auto
+  # Device configuration: cpu, cuda, mps (Apple Silicon), auto (auto-detect if not specified)
   device: "mps"
-
   # Generation parameters
   max_tokens: 8192
-
   # Default inference parameters
   prompt: "Text Recognition:"
-  
   # Default test image path
-  default_image_path: "ml/data/prescription/Training/training_words/0.png"
+#  default_image_path: "ml/data/prescription/Training/training_words/0.png"
+  default_image_path: "ml/samples/IMG_3290.jpg"
 
+  preprocess:
+    enabled: true
+    max_width: 768
+    max_height: 768
+    quality: 85

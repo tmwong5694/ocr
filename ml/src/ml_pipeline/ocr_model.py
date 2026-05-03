@@ -5,6 +5,11 @@ from transformers import AutoProcessor, AutoModelForImageTextToText
 from typing import Literal
 from loguru import logger
 from ml_pipeline.utils.config import load_config
+from ml_pipeline.utils.image_preprocessing import (
+    resize_image_for_ocr,
+    estimate_attention_memory_usage,
+    get_image_dimensions,
+)
 
 # Load configuration from YAML
 _CONFIG_PATH = Path(__file__).parent.parent.parent / ".config" / "detect_config.yaml"
@@ -41,7 +46,10 @@ class OCRModel:
         self,
         model_name: str = MODEL_NAME,
         device: Literal["cuda", "mps", "cpu"] = DEVICE,
-        model_kwargs: dict = None
+        model_kwargs: dict = None,
+        enable_preprocessing: bool = True,
+        max_image_width: int = None,
+        max_image_height: int = None,
     ):
         """
         Initialize the vision-language OCR model.
@@ -50,14 +58,53 @@ class OCRModel:
             model_name: HuggingFace model ID or path (e.g., "zai-org/GLM-OCR", "Qwen/Qwen-VL")
             device: Device to load model on (cpu, cuda, mps, auto)
             model_kwargs: Additional kwargs for model.from_pretrained()
+            enable_preprocessing: Whether to automatically resize large images (default: True)
+            max_image_width: Maximum image width in pixels (default: from config or 768)
+            max_image_height: Maximum image height in pixels (default: from config or 768)
         """
         self.model_name = model_name
         self.device = device
         self.model_kwargs = model_kwargs or {}
-        self.processor: AutoProcessor | None = None
-        self.model: AutoModelForImageTextToText | None = None
+        self._processor: AutoProcessor | None = None
+        self._model: AutoModelForImageTextToText | None = None
+        
+        # Image preprocessing configuration
+        self.enable_preprocessing = enable_preprocessing
+        preprocess_config = _OCR_CONFIG.get("preprocess", {})
+        self.max_image_width = max_image_width or preprocess_config.get("max_width", 768)
+        self.max_image_height = max_image_height or preprocess_config.get("max_height", 768)
+        self.quality = preprocess_config.get("quality", 85)
         
         logger.debug(f"Initialized OCR model for: {self.model_name}")
+        logger.debug(f"Image preprocessing: {self.enable_preprocessing} "
+                     f"(max size: {self.max_image_width}x{self.max_image_height})")
+
+    @property
+    def processor(self) -> AutoProcessor:
+        if self._processor is None:
+            try:
+                self._processor = AutoProcessor.from_pretrained(self.model_name)
+                logger.debug(f"Processor loaded for {self.model_name}")
+            except Exception as e:
+                logger.error(f"Failed to load processor for {self.model_name}: {e}")
+                raise
+        return self._processor
+
+    @property
+    def model(self) -> AutoModelForImageTextToText:
+        if self._model is None:
+            try:
+                self._model = AutoModelForImageTextToText.from_pretrained(
+                    pretrained_model_name_or_path=self.model_name,
+                    dtype=torch.float16,
+                    device_map=self.device,
+                    **self.model_kwargs
+                )
+                logger.debug(f"Model weights loaded for {self.model_name}")
+            except Exception as e:
+                logger.error(f"Failed to load model {self.model_name}: {e}")
+                raise
+        return self._model
 
     @timer
     def load_model(self, model_name: str = None) -> None:
@@ -69,36 +116,17 @@ class OCRModel:
         """
         if model_name:
             self.model_name = model_name
+            # Reset cached versions when switching models
+            self._processor = None
+            self._model = None
             
         logger.info(f"Loading model: {self.model_name}")
-        self._load_processor()
-        self._load_model_weights()
+        # Trigger loading by accessing properties
+        logger.debug("Loading processor...")
+        _ = self.processor
+        logger.debug("Loading model weights...")
+        _ = self.model
         logger.info(f"Model '{self.model_name}' loaded on device: {self.device}")
-
-    @timer
-    def _load_processor(self) -> None:
-        """Load the AutoProcessor."""
-        try:
-            self.processor = AutoProcessor.from_pretrained(self.model_name)
-            logger.debug(f"Processor loaded for {self.model_name}")
-        except Exception as e:
-            logger.error(f"Failed to load processor for {self.model_name}: {e}")
-            raise
-
-    @timer
-    def _load_model_weights(self) -> None:
-        """Load model weights."""
-        try:
-            self.model = AutoModelForImageTextToText.from_pretrained(
-                pretrained_model_name_or_path=self.model_name,
-                torch_dtype="auto",
-                device_map=self.device,
-                **self.model_kwargs  # Allow custom kwargs per model
-            )
-            logger.debug(f"Model weights loaded for {self.model_name}")
-        except Exception as e:
-            logger.error(f"Failed to load model {self.model_name}: {e}")
-            raise
 
     @timer
     def recognize_text(
@@ -129,12 +157,13 @@ class OCRModel:
         
         if prompt is None:
             prompt = DEFAULT_PROMPT
-            
-        if self.model is None or self.processor is None:
-            raise ValueError("Model not loaded. Call load_model() first.")
 
         if not Path(image_path).exists():
             raise FileNotFoundError(f"Image not found: {image_path}")
+
+        # Preprocess image if enabled
+        if self.enable_preprocessing:
+            image_path = self._preprocess_image(image_path)
 
         messages = [
             {
@@ -189,6 +218,56 @@ class OCRModel:
         except Exception as e:
             logger.error(f"Generation failed: {e}")
             raise
+
+    @timer
+    def _preprocess_image(self, image_path: str) -> str:
+        """
+        Preprocess image to reduce memory usage.
+        
+        Resizes large images while maintaining aspect ratio to prevent
+        the attention mechanism from allocating excessive memory.
+        
+        Args:
+            image_path: Path to the image file
+            
+        Returns:
+            Path to the preprocessed image (may be same as input if no resize needed)
+        """
+        try:
+            width, height = get_image_dimensions(image_path)
+            memory_gb = estimate_attention_memory_usage(width, height)
+            
+            logger.info(f"Image dimensions: {width}x{height}")
+            logger.info(f"Estimated attention memory: {memory_gb:.2f} GB")
+            
+            # Check if resizing is needed
+            if width > self.max_image_width or height > self.max_image_height:
+                logger.warning(
+                    f"Image size ({width}x{height}) exceeds max ({self.max_image_width}x{self.max_image_height}). "
+                    f"Resizing to reduce memory usage..."
+                )
+                
+                preprocessed_path = resize_image_for_ocr(
+                    image_path,
+                    max_width=self.max_image_width,
+                    max_height=self.max_image_height,
+                    quality=self.quality,
+                )
+                
+                # Check memory of resized image
+                new_width, new_height = get_image_dimensions(preprocessed_path)
+                new_memory_gb = estimate_attention_memory_usage(new_width, new_height)
+                logger.info(f"After preprocessing: {new_width}x{new_height} (~{new_memory_gb:.2f} GB)")
+                
+                return preprocessed_path
+            else:
+                logger.debug(f"Image size is acceptable ({width}x{height})")
+                return image_path
+                
+        except Exception as e:
+            logger.error(f"Image preprocessing failed: {e}")
+            logger.warning("Attempting to use original image anyway...")
+            return image_path
 
     def switch_model(self, model_name: str) -> None:
         """Convenience method to switch to a different model."""
