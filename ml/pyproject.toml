@@ -30,7 +30,7 @@ ml-infer = "ml_pipeline.infer:cli_main"
 ml-classify = "ml_pipeline.classify:cli_main"
 ml-clean = "ml_pipeline.clean_data:main"
 ml-label = "ml_pipeline.detect_animal:cli_main"
-ml-ocr = "ml_pipeline.detect_writing:cli_main"
+ml-ocr = "ml_pipeline.extract_writing:cli_main"
 
 [build-system]
 requires = ["hatchling"]
