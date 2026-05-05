@@ -46,11 +46,7 @@ def cli_main():
     args = parser.parse_args()
 
     # Load configuration
-    try:
-        config = load_config(args.config)
-    except FileNotFoundError:
-        logger.error(f"Config file not found: {args.config}")
-        raise
+    config = load_config(args.config)
 
     # Get image path from argument or config
     image_path = args.image or config.get("ocr_model", {}).get("default_image_path", DEFAULT_IMAGE_PATH)
