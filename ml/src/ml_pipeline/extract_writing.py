@@ -67,16 +67,16 @@ def cli_main():
     try:
         ocr_model = OCRModel(model_name=model_name)
         ocr_model.load_model()
-        
+
         result = ocr_model.recognize_text(image_path)
-        
+
         logger.info(f"Recognition result: {result}")
         print(f"\n{'='*60}")
         print(f"Recognized Text:")
         print(f"{'='*60}")
         print(result)
         print(f"{'='*60}\n")
-        
+
     except Exception as e:
         logger.error(f"Error during OCR inference: {e}")
         raise
