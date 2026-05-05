@@ -65,8 +65,8 @@ class OCRModel:
         self.model_name = model_name
         self.device = device
         self.model_kwargs = model_kwargs or {}
-        self._processor: AutoProcessor | None = None
-        self._model: AutoModelForImageTextToText | None = None
+        self.processor: AutoProcessor | None = None
+        self.model: AutoModelForImageTextToText | None = None
 
         # Image preprocessing configuration
         self.enable_preprocessing = enable_preprocessing
@@ -79,54 +79,39 @@ class OCRModel:
         logger.debug(f"Image preprocessing: {self.enable_preprocessing} "
                      f"(max size: {self.max_image_width}x{self.max_image_height})")
 
-    @property
-    def processor(self) -> AutoProcessor:
-        if self._processor is None:
-            try:
-                self._processor = AutoProcessor.from_pretrained(self.model_name)
-                logger.debug(f"Processor loaded for {self.model_name}")
-            except Exception as e:
-                logger.error(f"Failed to load processor for {self.model_name}: {e}")
-                raise
-        return self._processor
-
-    @property
-    def model(self) -> AutoModelForImageTextToText:
-        if self._model is None:
-            try:
-                self._model = AutoModelForImageTextToText.from_pretrained(
-                    pretrained_model_name_or_path=self.model_name,
-                    dtype=torch.float16,
-                    device_map=self.device,
-                    **self.model_kwargs
-                )
-                logger.debug(f"Model weights loaded for {self.model_name}")
-            except Exception as e:
-                logger.error(f"Failed to load model {self.model_name}: {e}")
-                raise
-        return self._model
-
     @timer
     def load_model(self, model_name: str = None) -> None:
-        """
-        Load processor and model with timing.
-
-        Args:
-            model_name: Override the model name (useful for testing different models)
-        """
+        """Load processor and model explicitly."""
         if model_name:
             self.model_name = model_name
-            # Reset cached versions when switching models
-            self._processor = None
-            self._model = None
 
         logger.info(f"Loading model: {self.model_name}")
-        # Trigger loading by accessing properties
+
+        # Load processor
         logger.debug("Loading processor...")
-        _ = self.processor
+        try:
+            self.processor = AutoProcessor.from_pretrained(self.model_name)
+            logger.debug(f"Processor loaded")
+        except Exception as e:
+            logger.error(f"Failed to load processor: {e}")
+            raise
+
+        # Load model
         logger.debug("Loading model weights...")
-        _ = self.model
-        logger.info(f"Model '{self.model_name}' loaded on device: {self.device}")
+        try:
+            self.model = AutoModelForImageTextToText.from_pretrained(
+                pretrained_model_name_or_path=self.model_name,
+                dtype=torch.float16,
+                device_map=self.device,
+                **self.model_kwargs
+            )
+            logger.debug(f"Model loaded")
+        except Exception as e:
+            logger.error(f"Failed to load model: {e}")
+            raise
+
+        logger.info(f"Model loaded on device: {self.device}")
+
 
     @timer
     def recognize_text(
@@ -154,7 +139,13 @@ class OCRModel:
         if model_name and model_name != self.model_name:
             logger.info(f"Switching model from {self.model_name} to {model_name}")
             self.load_model(model_name)
-        
+
+        if self.model is None or self.processor is None:
+            raise RuntimeError(
+                "Model not loaded. Call load_model() before recognize_text(). "
+                "Example: ocr_model.load_model()"
+            )
+
         if prompt is None:
             prompt = DEFAULT_PROMPT
 
