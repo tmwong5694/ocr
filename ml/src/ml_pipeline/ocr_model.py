@@ -67,7 +67,7 @@ class OCRModel:
         self.model_kwargs = model_kwargs or {}
         self._processor: AutoProcessor | None = None
         self._model: AutoModelForImageTextToText | None = None
-        
+
         # Image preprocessing configuration
         self.enable_preprocessing = enable_preprocessing
         preprocess_config = _OCR_CONFIG.get("preprocess", {})
@@ -110,7 +110,7 @@ class OCRModel:
     def load_model(self, model_name: str = None) -> None:
         """
         Load processor and model with timing.
-        
+
         Args:
             model_name: Override the model name (useful for testing different models)
         """
@@ -119,7 +119,7 @@ class OCRModel:
             # Reset cached versions when switching models
             self._processor = None
             self._model = None
-            
+
         logger.info(f"Loading model: {self.model_name}")
         # Trigger loading by accessing properties
         logger.debug("Loading processor...")
@@ -223,10 +223,10 @@ class OCRModel:
     def _preprocess_image(self, image_path: str) -> str:
         """
         Preprocess image to reduce memory usage.
-        
+
         Resizes large images while maintaining aspect ratio to prevent
         the attention mechanism from allocating excessive memory.
-        
+
         Args:
             image_path: Path to the image file
             
@@ -236,10 +236,10 @@ class OCRModel:
         try:
             width, height = get_image_dimensions(image_path)
             memory_gb = estimate_attention_memory_usage(width, height)
-            
+
             logger.info(f"Image dimensions: {width}x{height}")
             logger.info(f"Estimated attention memory: {memory_gb:.2f} GB")
-            
+
             # Check if resizing is needed
             if width > self.max_image_width or height > self.max_image_height:
                 logger.warning(
@@ -258,12 +258,12 @@ class OCRModel:
                 new_width, new_height = get_image_dimensions(preprocessed_path)
                 new_memory_gb = estimate_attention_memory_usage(new_width, new_height)
                 logger.info(f"After preprocessing: {new_width}x{new_height} (~{new_memory_gb:.2f} GB)")
-                
+
                 return preprocessed_path
             else:
                 logger.debug(f"Image size is acceptable ({width}x{height})")
                 return image_path
-                
+
         except Exception as e:
             logger.error(f"Image preprocessing failed: {e}")
             logger.warning("Attempting to use original image anyway...")
