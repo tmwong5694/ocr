@@ -81,14 +81,14 @@ def cli_main():
     classes = config.get('inference', {}).get('target_classes', [15, 16])
     model_weight = Path(config.get('model', {}).get('weights', 'ml/src/ml_pipeline/models/yolov8n.pt'))
     image_path = config.get('image')
-    
+
     if not image_path:
         raise ValueError("Image path not specified in detect.yaml config file")
-    
+
     # Create output directory following industry standards
     output_dir = Path("ml/outputs/detections")
     output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Generate a sensible output path based on the input name
     out_path = output_dir / (Path(image_path).stem + "_detected.jpg")
 
