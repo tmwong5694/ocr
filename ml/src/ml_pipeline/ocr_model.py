@@ -268,7 +268,3 @@ class OCRModel:
             logger.error(f"Image preprocessing failed: {e}")
             logger.warning("Attempting to use original image anyway...")
             return image_path
-
-    def switch_model(self, model_name: str) -> None:
-        """Convenience method to switch to a different model."""
-        self.load_model(model_name)
