@@ -32,10 +32,10 @@ def cli_main():
         help="Path to the config file containing OCR model settings"
     )
     parser.add_argument(
-        "--image",
+        "--file",
         type=str,
         default=None,
-        help="Path to image (overrides config setting)"
+        help="Path to file (overrides config setting)"
     )
     parser.add_argument(
         "--model",
@@ -49,7 +49,7 @@ def cli_main():
     config = load_config(args.config)
 
     # Get image path from argument or config
-    file_path = args.image or config.get("ocr_model", {}).get("default_image_path", DEFAULT_IMAGE_PATH)
+    file_path = args.file or config.get("ocr_model", {}).get("file_path", DEFAULT_IMAGE_PATH)
     model_name = args.model or config.get("ocr_model", {}).get("model_name")
     
     if not file_path:
