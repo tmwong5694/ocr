@@ -1,4 +1,5 @@
 from pathlib import Path
+import fitz
 import torch
 from shared_utils.timer import timer
 from transformers import AutoProcessor, AutoModelForImageTextToText
@@ -169,6 +170,31 @@ class OCRModel:
         output_text = self._generate(inputs)
 
         return output_text
+
+    def check_contains_text(self, pdf_path: str):
+
+        has_any_text = False
+        with fitz.open(pdf_path) as doc:
+            for page in doc:
+                if page.get_text().strip():
+                    has_any_text = True
+                    break
+
+        return has_any_text
+
+
+    def pdf_to_text(self, pdf_path: str):
+
+        doc = fitz.open(pdf_path)
+        for page_idx, page in enumerate(doc):
+            for img_index, img in enumerate(doc.get_page_images(page_idx)):
+                xref = img[0]
+                image_data = doc.extract_image(xref)
+
+                with open(f"page{page_idx}_img{img_index}.{image_data["ext"]}", "wb") as writer:
+                    writer.write(image_data["image"])
+
+        return
 
     @timer
     def _prepare_inputs(self, messages: list) -> dict:

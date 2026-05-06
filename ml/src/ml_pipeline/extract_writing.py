@@ -63,8 +63,11 @@ def cli_main():
     try:
         ocr_model = OCRModel(model_name=model_name)
         ocr_model.load_model()
-
-        result = ocr_model.image_to_text(image_path)
+        if Path(image_path).suffix in (".jpg", ".png"):
+            result = ocr_model.image_to_text(image_path)
+        elif Path(image_path).suffix in (".pdf"):
+            result = ocr_model.pdf_to_text(image_path)
+            contains_text = ocr_model.check_contains_text(image_path)
 
         logger.info(f"OCR completed successfully")
         logger.info(f"Recognized text:\n{result}")
