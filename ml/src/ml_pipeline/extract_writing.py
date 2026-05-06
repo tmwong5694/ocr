@@ -49,25 +49,24 @@ def cli_main():
     config = load_config(args.config)
 
     # Get image path from argument or config
-    image_path = args.image or config.get("ocr_model", {}).get("default_image_path", DEFAULT_IMAGE_PATH)
+    file_path = args.image or config.get("ocr_model", {}).get("default_image_path", DEFAULT_IMAGE_PATH)
     model_name = args.model or config.get("ocr_model", {}).get("model_name")
     
-    if not image_path:
+    if not file_path:
         raise ValueError("Image path not specified in config or command line")
     
     logger.info(f"Starting vision-language OCR inference")
-    logger.info(f"Image: {image_path}")
+    logger.info(f"Image: {file_path}")
     logger.info(f"Model: {model_name}")
 
     # Initialize and run OCR model
     try:
         ocr_model = OCRModel(model_name=model_name)
         ocr_model.load_model()
-        if Path(image_path).suffix in (".jpg", ".png"):
-            result = ocr_model.image_to_text(image_path)
-        elif Path(image_path).suffix in (".pdf"):
-            result = ocr_model.pdf_to_text(image_path)
-            contains_text = ocr_model.check_contains_text(image_path)
+        if Path(file_path).suffix in (".jpg", ".png"):
+            result = ocr_model.image_to_text(file_path)
+        elif Path(file_path).suffix in (".pdf"):
+            contains_text = ocr_model.check_contains_text(file_path)
 
         logger.info(f"OCR completed successfully")
         logger.info(f"Recognized text:\n{result}")
