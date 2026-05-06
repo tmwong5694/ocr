@@ -114,7 +114,7 @@ class OCRModel:
 
 
     @timer
-    def recognize_text(
+    def image_to_text(
             self,
             image_path: str,
             prompt: str = None,

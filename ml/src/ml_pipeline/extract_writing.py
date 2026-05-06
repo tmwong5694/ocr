@@ -64,7 +64,7 @@ def cli_main():
         ocr_model = OCRModel(model_name=model_name)
         ocr_model.load_model()
 
-        result = ocr_model.recognize_text(image_path)
+        result = ocr_model.image_to_text(image_path)
 
         logger.info(f"OCR completed successfully")
         logger.info(f"Recognized text:\n{result}")
