@@ -70,6 +70,7 @@ def cli_main():
             # Handles as image
             if contains_text:
                 result = ocr_model.image_to_text(file_path)
+            # Handles as text
             else:
                 result = ocr_model.pdf_to_text(file_path)
 
