@@ -80,7 +80,7 @@ class OCRModel:
         logger.debug(f"Image preprocessing: {self.enable_preprocessing} "
                      f"(max size: {self.max_image_width}x{self.max_image_height})")
 
-    @timer
+    # @timer
     def load_model(self, model_name: str = None) -> None:
         """Load processor and model explicitly."""
         if model_name:
@@ -114,7 +114,7 @@ class OCRModel:
         logger.info(f"Model loaded on device: {self.device}")
 
 
-    @timer
+    # @timer
     def image_to_text(
             self,
             image_path: str,
@@ -183,8 +183,9 @@ class OCRModel:
         return has_any_text
 
 
-    def pdf_to_text(self, pdf_path: str):
+    def extract_image(self, pdf_path: str):
 
+        extracted = []
         doc = fitz.open(pdf_path)
         for page_idx, page in enumerate(doc):
             for img_index, img in enumerate(doc.get_page_images(page_idx)):
@@ -194,9 +195,11 @@ class OCRModel:
                 with open(f"page{page_idx}_img{img_index}.{image_data["ext"]}", "wb") as writer:
                     writer.write(image_data["image"])
 
-        return
+                extracted.append(f"page{page_idx}_img{img_index}.{image_data['ext']}")
 
-    @timer
+        return extracted
+
+    # @timer
     def _prepare_inputs(self, messages: list) -> dict:
         """Prepare model inputs from messages."""
         try:
@@ -215,7 +218,7 @@ class OCRModel:
             logger.error(f"Failed to prepare inputs: {e}")
             raise
 
-    @timer
+    # @timer
     def _generate(self, inputs: dict, max_tokens: int = None) -> str:
         """
         Generate text from model.
@@ -236,7 +239,7 @@ class OCRModel:
             logger.error(f"Generation failed: {e}")
             raise
 
-    @timer
+    # @timer
     def _preprocess_image(self, image_path: str) -> str:
         """
         Preprocess image to reduce memory usage.
