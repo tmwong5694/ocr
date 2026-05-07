@@ -67,12 +67,16 @@ def cli_main():
             result = ocr_model.image_to_text(file_path)
         elif Path(file_path).suffix in (".pdf"):
             contains_text = ocr_model.check_contains_text(file_path)
-            # Handles as image
-            if contains_text:
-                result = ocr_model.image_to_text(file_path)
             # Handles as text
+            if contains_text:
+                pass
+            # Handles as image
             else:
-                result = ocr_model.pdf_to_text(file_path)
+                image_paths = ocr_model.extract_image(file_path)
+                extracted_texts = {}
+                for idx, image_path in enumerate(image_paths):
+                    result = ocr_model.image_to_text(image_path)
+                    extracted_texts[idx] = result
 
         logger.info(f"OCR completed successfully")
         logger.info(f"Recognized text:\n{result}")
