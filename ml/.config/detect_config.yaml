@@ -8,9 +8,10 @@ ocr_model:
   max_tokens: 8192
   # Default inference parameters
   prompt: "Text Recognition:"
-  # Default test image path
-#  default_image_path: "ml/data/prescription/Training/training_words/0.png"
-  default_image_path: "ml/samples/IMG_3290.jpg"
+  # Path to file for inference
+#  file_path: "ml/data/prescription/Training/training_words/0.png"
+#  file_path: "ml/samples/images/IMG_3290.jpg"
+  file_path: "ml/samples/pdfs/gp_2025.10.20.pdf"
 
   preprocess:
     enabled: true
