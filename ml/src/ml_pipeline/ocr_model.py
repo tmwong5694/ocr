@@ -21,7 +21,19 @@ _OCR_CONFIG = _CONFIG.get("ocr_model", {})
 MODEL_NAME = _OCR_CONFIG.get("model_name", "zai-org/GLM-OCR")
 DEFAULT_IMAGE_PATH = _OCR_CONFIG.get("default_image_path", "ml/data/prescription/Training/training_words/0.png")
 MAX_TOKENS = _OCR_CONFIG.get("max_tokens", 8192)
-DEFAULT_PROMPT = _OCR_CONFIG.get("prompt", "Text Recognition:")
+
+# Load prompt from text file (industry standard: separate content from config)
+def _load_default_prompt():
+    """Load the OCR prompt from a dedicated text file."""
+    prompt_path = Path(__file__).parent.parent.parent / ".config" / "ocr_prompt.txt"
+    try:
+        with open(prompt_path, "r") as f:
+            return f.read().strip()
+    except FileNotFoundError:
+        logger.warning(f"Prompt file not found at {prompt_path}, using fallback")
+        return "Recognize text in the image."
+
+DEFAULT_PROMPT = _load_default_prompt()
 
 # Auto-detect device if set to "auto"
 DEVICE = _OCR_CONFIG.get("device", "auto")

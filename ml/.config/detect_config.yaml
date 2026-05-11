@@ -6,8 +6,6 @@ ocr_model:
   device: "mps"
   # Generation parameters
   max_tokens: 8192
-  # Default inference parameters
-  prompt: "Recognize both printed and handwritten text in the image."
   # Path to file for inference
 #  file_path: "ml/data/prescription/Training/training_words/0.png"
 #  file_path: "ml/samples/images/IMG_3290.jpg"
