@@ -1,4 +1,6 @@
-from fastapi import FastAPI, File, Request, UploadFile
+from fastapi import BackgroundTasks, FastAPI, File, HTTPException, Request, UploadFile
+import shutil
+import tempfile
 from pathlib import Path
 from typing import Literal
 from ml_pipeline.ocr_model import OCRModel
@@ -16,17 +18,39 @@ async def _analyze_file_stat(file: UploadFile, request: Request):
         "file_size": int(file_size) if file_size else 0,
         "content_type": file.content_type
     }
-@app.post("/analyze_file/", tags=["files"])
-async def analyze_file(file: UploadFile, request: Request):
-    return await _analyze_file_stat(file, request)
 
-@app.post("/files/ocr", tags=["files"])
-async def extract_ocr(
+
+def cleanup_temp_dir(temp_dir: str):
+    """Deletes the temporary directory and all contents after the response is sent."""
+    shutil.rmtree(temp_dir, ignore_errors=True)
+
+
+async def _extract_ocr(
         file: UploadFile,
-
+        background_tasks: BackgroundTasks
 ):
+    # Check file type
+    filename = file.filename or ""
+    if Path(filename).suffix.lower() != ".pdf":
+        raise HTTPException(
+            status_code=415,
+            detail="Only .pdf files are accepted.",
+        )
+
+
+    # 1. Create a unique temporary directory
+    temp_dir = tempfile.mkdtemp()
+
+    # 2. Schedule cleanup AFTER FastAPI returns the HTTP response
+    background_tasks.add_task(cleanup_temp_dir, temp_dir)
+
+    file_path = Path(temp_dir) / file.filename
+
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
     model_name = "zai-org/GLM-OCR"
-    temp_path = ""
+    # temp_path = ""
     prompt_path = Path("ml") / ".config" / "ocr_prompt.txt"
 
     try:
@@ -40,12 +64,26 @@ async def extract_ocr(
         device="cpu",
         model_kwargs={},
         enable_preprocessing=True,
-        max_width=768,
-        max_height=768,
+        max_image_width=768,
+        max_image_height=768,
     )
-    ocr_model.image_to_text(
-        image_path=temp_path,
+    ocr_model.load_model()
+    extracted_values = ocr_model.image_to_text(
+        image_path=str(file_path),
         prompt=prompt,
         model_name=model_name
     )
-    return
+
+    return extracted_values
+
+
+@app.post("/analyze_file/", tags=["files"])
+async def analyze_file(file: UploadFile, request: Request):
+    return await _analyze_file_stat(file, request)
+
+@app.post("/files/ocr", tags=["files"])
+async def extract_ocr(
+        file: UploadFile,
+        background_tasks: BackgroundTasks
+):
+    return await _extract_ocr(file, background_tasks)
