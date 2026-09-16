@@ -103,7 +103,7 @@ class OCRModel:
         # Load processor
         logger.debug("Loading processor...")
         try:
-            self.processor = AutoProcessor.from_pretrained(self.model_name)
+            self.processor = AutoProcessor.from_pretrained(self.model_name, trust_remote_code=True)
             logger.debug(f"Processor loaded")
         except Exception as e:
             logger.error(f"Failed to load processor: {e}")
