@@ -6,7 +6,10 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "accelerate>=1.13.0",
+    "addict>=2.4.0",
     "backend",
+    "einops>=0.8.2",
+    "fastapi[standard]>=0.136.1",
     "ml_pipeline",
     "pymupdf>=1.27.2.3",
     "python-multipart>=0.0.27",
