@@ -75,7 +75,7 @@ async def _extract_ocr(
             page = doc.load_page(page_index)
             pix = page.get_pixmap(matrix=pymupdf.Matrix(2, 2), alpha=False)
             image_path = Path(temp_dir) / f"page_{page_index + 1:04d}.png"
-            pix.save(image_path)
+            # pix.save(image_path) # TODO: not saving yet
 
             page_results.append(
                 ocr_model.image_to_text(
