@@ -26,6 +26,8 @@ form.addEventListener("submit", async (event) => {
   setStatus("Uploading and running OCR...");
   outputEl.textContent = "";
 
+    const startedAt = performance.now();
+
   try {
     const response = await fetch(apiUrl, {
       method: "POST",
@@ -38,7 +40,8 @@ form.addEventListener("submit", async (event) => {
       throw new Error(payload?.detail ?? `Request failed: ${response.status}`);
     }
 
-    setStatus("Done.");
+    const seconds = ((performance.now() - startedAt) / 1000).toFixed(2);
+    setStatus(`It took ${seconds} seconds to complete extraction`);
     outputEl.textContent = JSON.stringify(payload, null, 2);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
