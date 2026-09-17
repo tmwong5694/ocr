@@ -28,16 +28,23 @@ form.addEventListener("submit", async (event) => {
 
     const startedAt = performance.now();
 
-  try {
+    try {
     const response = await fetch(apiUrl, {
       method: "POST",
       body: formData,
     });
 
-    const payload = await response.json();
+    const payload = await response.json().catch(() => null);
 
     if (!response.ok) {
-      throw new Error(payload?.detail ?? `Request failed: ${response.status}`);
+      const detail =
+        payload && typeof payload === "object" && "detail" in payload
+          ? String((payload as { detail?: unknown }).detail ?? "")
+          : "";
+
+      throw new Error(
+        detail || `Request failed with status ${response.status} ${response.statusText}`,
+      );
     }
 
     const seconds = ((performance.now() - startedAt) / 1000).toFixed(2);
