@@ -10,6 +10,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal
 
+import json
+import re
+
 import numpy as np
 from loguru import logger
 from PIL import Image
@@ -17,6 +20,11 @@ from PIL import Image
 
 ImageFormat = Literal["JPEG", "PNG", "WEBP"]
 
+
+def parse_ocr_json(raw: str):
+    cleaned = raw.strip()
+    cleaned = re.sub(r"^```json|```$", "", cleaned, flags=re.IGNORECASE)
+    return json.loads(cleaned)
 
 def get_image_dimensions(image_path: str | Path) -> tuple[int, int]:
     """

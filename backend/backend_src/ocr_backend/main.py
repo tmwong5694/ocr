@@ -1,9 +1,8 @@
-from fastapi import BackgroundTasks, FastAPI, File, HTTPException, Request, UploadFile
+from fastapi import BackgroundTasks, FastAPI, Request, UploadFile
+from PIL import Image
 import pymupdf
 import shutil
-import tempfile
 from pathlib import Path
-from typing import Literal
 from ml_pipeline.ocr_model import OCRModel
 
 app = FastAPI()
@@ -26,41 +25,15 @@ def cleanup_temp_dir(temp_dir: str):
     shutil.rmtree(temp_dir, ignore_errors=True)
 
 
-async def _extract_ocr(
-        file: UploadFile,
-        background_tasks: BackgroundTasks
-):
-    # Check file type
-    filename = file.filename or ""
-    if Path(filename).suffix.lower() != ".pdf":
-        raise HTTPException(
-            status_code=415,
-            detail="Only .pdf files are accepted.",
-        )
+async def _extract_ocr(file: UploadFile):
+    pdf_bytes = await file.read()
 
-
-    # 1. Create a unique temporary directory
-    temp_dir = tempfile.mkdtemp()
-
-    # 2. Schedule cleanup AFTER FastAPI returns the HTTP response
-    background_tasks.add_task(cleanup_temp_dir, temp_dir)
-
-    pdf_path = Path(temp_dir) / file.filename
-    with open(pdf_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-
-    model_name = "zai-org/GLM-OCR"
-    # temp_path = ""
     prompt_path = Path("ml") / ".config" / "ocr_prompt.txt"
-
-    try:
-        with open(prompt_path, "r") as f:
-            prompt = f.read()
-    except FileNotFoundError:
-        return {"error": f"Prompt file not found at {prompt_path}"}
+    with open(prompt_path, "r") as f:
+        prompt = f.read()
 
     ocr_model = OCRModel(
-        model_name=model_name,
+        model_name="zai-org/GLM-OCR",
         device="cpu",
         model_kwargs={},
         enable_preprocessing=True,
@@ -70,20 +43,21 @@ async def _extract_ocr(
     ocr_model.load_model()
 
     page_results = []
-    with pymupdf.open(pdf_path) as doc:
+    with pymupdf.open(stream=pdf_bytes, filetype="pdf") as doc:
         for page_index in range(doc.page_count):
             page = doc.load_page(page_index)
             pix = page.get_pixmap(matrix=pymupdf.Matrix(2, 2), alpha=False)
-            image_path = Path(temp_dir) / f"page_{page_index + 1:04d}.png"
-            # pix.save(image_path) # TODO: not saving yet
+
+            image = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
 
             page_results.append(
                 ocr_model.image_to_text(
-                    image_path=str(image_path),
+                    image=image,
                     prompt=prompt,
                     model_name="zai-org/GLM-OCR",
                 )
             )
+
     return {"pages": page_results, "text": "\n\n".join(page_results)}
 
 
@@ -94,6 +68,5 @@ async def analyze_file(file: UploadFile, request: Request):
 @app.post("/files/ocr", tags=["files"])
 async def extract_ocr(
         file: UploadFile,
-        background_tasks: BackgroundTasks
 ):
-    return await _extract_ocr(file, background_tasks)
+    return await _extract_ocr(file)
