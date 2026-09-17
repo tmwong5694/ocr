@@ -1,4 +1,5 @@
 from fastapi import BackgroundTasks, FastAPI, File, HTTPException, Request, UploadFile
+import pymupdf
 import shutil
 import tempfile
 from pathlib import Path
@@ -44,9 +45,8 @@ async def _extract_ocr(
     # 2. Schedule cleanup AFTER FastAPI returns the HTTP response
     background_tasks.add_task(cleanup_temp_dir, temp_dir)
 
-    file_path = Path(temp_dir) / file.filename
-
-    with open(file_path, "wb") as buffer:
+    pdf_path = Path(temp_dir) / file.filename
+    with open(pdf_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
     model_name = "zai-org/GLM-OCR"
@@ -68,13 +68,23 @@ async def _extract_ocr(
         max_image_height=768,
     )
     ocr_model.load_model()
-    extracted_values = ocr_model.image_to_text(
-        image_path=str(file_path),
-        prompt=prompt,
-        model_name=model_name
-    )
 
-    return extracted_values
+    page_results = []
+    with pymupdf.open(pdf_path) as doc:
+        for page_index in range(doc.page_count):
+            page = doc.load_page(page_index)
+            pix = page.get_pixmap(matrix=pymupdf.Matrix(2, 2), alpha=False)
+            image_path = Path(temp_dir) / f"page_{page_index + 1:04d}.png"
+            pix.save(image_path)
+
+            page_results.append(
+                ocr_model.image_to_text(
+                    image_path=str(image_path),
+                    prompt=prompt,
+                    model_name="zai-org/GLM-OCR",
+                )
+            )
+    return {"pages": page_results, "text": "\n\n".join(page_results)}
 
 
 @app.post("/analyze_file/", tags=["files"])

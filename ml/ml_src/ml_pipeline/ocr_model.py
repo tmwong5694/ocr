@@ -112,9 +112,10 @@ class OCRModel:
         # Load model
         logger.debug("Loading model weights...")
         try:
+            dtype = torch.float16 if self.device in {"cuda", "mps"} else torch.float32
             self.model = AutoModelForImageTextToText.from_pretrained(
                 pretrained_model_name_or_path=self.model_name,
-                dtype=torch.float16,
+                dtype=dtype,
                 device_map=self.device,
                 **self.model_kwargs
             )
@@ -130,7 +131,7 @@ class OCRModel:
     def image_to_text(
             self,
             image_path: str,
-            prompt: str = None,
+            prompt: str = "",
             model_name: str = None
     ) -> str:
         """
@@ -159,7 +160,7 @@ class OCRModel:
                 "Example: ocr_model.load_model()"
             )
 
-        if prompt is None:
+        if prompt == "":
             prompt = DEFAULT_PROMPT
 
         if not Path(image_path).exists():
