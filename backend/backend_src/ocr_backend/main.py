@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -12,7 +13,24 @@ from ml_pipeline.ocr_model import OCRModel
 BASE_DIR = Path(__file__).resolve().parents[3]
 FRONTEND_DIR = BASE_DIR / "frontend"
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    prompt_path = BASE_DIR / "ml" / ".config" / "ocr_prompt.txt"
+    app.state.prompt = prompt_path.read_text()
+
+    app.state.ocr_model = OCRModel(
+        model_name="zai-org/GLM-OCR",
+        device="cpu",
+        model_kwargs={},
+        enable_preprocessing=True,
+        max_image_width=768,
+        max_image_height=768,
+    )
+    app.state.ocr_model.load_model()
+
+    yield
+
+app = FastAPI(lifespan=lifespan)
 app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 
 app.add_middleware(
@@ -54,22 +72,11 @@ def _parse_ocr_json(raw: str) -> dict:
 
     return parsed
 
-async def _extract_ocr(file: UploadFile):
+async def _extract_ocr(file: UploadFile, request: Request):
+
     pdf_bytes = await file.read()
-
-    prompt_path = Path("ml") / ".config" / "ocr_prompt.txt"
-    with open(prompt_path, "r") as f:
-        prompt = f.read()
-
-    ocr_model = OCRModel(
-        model_name="zai-org/GLM-OCR",
-        device="cpu",
-        model_kwargs={},
-        enable_preprocessing=True,
-        max_image_width=768,
-        max_image_height=768,
-    )
-    ocr_model.load_model()
+    prompt = request.app.state.prompt
+    ocr_model = request.app.state.ocr_model
 
     page_results = []
     with pymupdf.open(stream=pdf_bytes, filetype="pdf") as doc:
@@ -99,7 +106,5 @@ async def analyze_file(file: UploadFile, request: Request):
     return await _analyze_file_stat(file, request)
 
 @app.post("/files/ocr", tags=["files"])
-async def extract_ocr(
-        file: UploadFile,
-):
-    return await _extract_ocr(file)
+async def extract_ocr(file: UploadFile, request: Request):
+    return await _extract_ocr(file, request)
