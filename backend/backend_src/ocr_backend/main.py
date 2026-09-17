@@ -58,12 +58,12 @@ def cleanup_temp_dir(temp_dir: str):
 def _parse_ocr_json(raw: str) -> dict:
     cleaned = raw.strip()
     if cleaned.startswith("```"):
-        cleaned = cleaned.removeprefix("```json").removeprefix("```").strip()
+        cleaned = cleaned.removeprefix("```json").removeprefix("```").strip(" \n\'")
         if cleaned.endswith("```"):
             cleaned = cleaned[:-3].strip()
 
     try:
-        parsed = json.loads(cleaned)
+        parsed = eval(cleaned)
     except json.JSONDecodeError as e:
         raise HTTPException(status_code=502, detail=f"Model returned invalid JSON: {e.msg}") from e
 

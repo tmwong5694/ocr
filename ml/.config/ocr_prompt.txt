@@ -8,6 +8,7 @@
 
 ### OUTPUT
 - Return a JSON object containing the extracted information.
+- Ensure the json format is valid and properly structured.
 - The JSON object should have the following structure:
 ```json
 {
