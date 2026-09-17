@@ -1,5 +1,6 @@
-from fastapi import BackgroundTasks, FastAPI, Request, UploadFile
+from fastapi import FastAPI, HTTPException, Request, UploadFile
 from PIL import Image
+import json
 import pymupdf
 import shutil
 from pathlib import Path
@@ -24,6 +25,22 @@ def cleanup_temp_dir(temp_dir: str):
     """Deletes the temporary directory and all contents after the response is sent."""
     shutil.rmtree(temp_dir, ignore_errors=True)
 
+def _parse_ocr_json(raw: str) -> dict:
+    cleaned = raw.strip()
+    if cleaned.startswith("```"):
+        cleaned = cleaned.removeprefix("```json").removeprefix("```").strip()
+        if cleaned.endswith("```"):
+            cleaned = cleaned[:-3].strip()
+
+    try:
+        parsed = json.loads(cleaned)
+    except json.JSONDecodeError as e:
+        raise HTTPException(status_code=502, detail=f"Model returned invalid JSON: {e.msg}") from e
+
+    if not isinstance(parsed, dict):
+        raise HTTPException(status_code=502, detail="Model returned JSON that is not an object.")
+
+    return parsed
 
 async def _extract_ocr(file: UploadFile):
     pdf_bytes = await file.read()
@@ -47,18 +64,19 @@ async def _extract_ocr(file: UploadFile):
         for page_index in range(doc.page_count):
             page = doc.load_page(page_index)
             pix = page.get_pixmap(matrix=pymupdf.Matrix(2, 2), alpha=False)
-
             image = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
 
-            page_results.append(
-                ocr_model.image_to_text(
-                    image=image,
-                    prompt=prompt,
-                    model_name="zai-org/GLM-OCR",
-                )
+            raw_text = ocr_model.image_to_text(
+                image=image,
+                prompt=prompt,
+                model_name="zai-org/GLM-OCR",
             )
+            page_results.append(_parse_ocr_json(raw_text))
 
-    return {"pages": page_results, "text": "\n\n".join(page_results)}
+    return {
+        "pages": page_results,
+        "text": page_results[0] if len(page_results) == 1 else page_results,
+    }
 
 
 @app.post("/analyze_file/", tags=["files"])
