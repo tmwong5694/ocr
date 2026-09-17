@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OCR Frontend</title>
+<link rel="stylesheet" href="/static/styles.css" />
+<script type="module" src="/static/frontend_src/main.js"></script>
+  </head>
+  <body>
+    <main class="app">
+      <section class="card">
+        <h1>OCR Upload</h1>
+        <p class="subtitle">Upload a PDF and send it to the FastAPI backend.</p>
+
+        <form id="upload-form" class="form">
+          <label class="field">
+            <span>Backend URL</span>
+            <input id="api-url" type="url" value="http://127.0.0.1:8000/files/ocr" />
+          </label>
+
+          <label class="field">
+            <span>File</span>
+            <input id="file-input" type="file" accept=".pdf,application/pdf" />
+          </label>
+
+          <button id="submit-btn" type="submit">Run OCR</button>
+        </form>
+
+        <p id="status" class="status">Waiting for a file…</p>
+        <pre id="output" class="output"></pre>
+      </section>
+    </main>
+  </body>
+</html>
