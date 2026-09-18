@@ -1,9 +1,10 @@
 const form = document.querySelector<HTMLFormElement>("#upload-form")!;
-const apiUrlInput = document.querySelector<HTMLInputElement>("#api-url")!;
 const fileInput = document.querySelector<HTMLInputElement>("#file-input")!;
 const statusEl = document.querySelector<HTMLParagraphElement>("#status")!;
 const outputEl = document.querySelector<HTMLPreElement>("#output")!;
 const submitBtn = document.querySelector<HTMLButtonElement>("#submit-btn")!;
+
+const OCR_API_PATH = "/files/ocr";
 
 const setStatus = (message: string) => {
   statusEl.textContent = message;
@@ -18,7 +19,6 @@ form.addEventListener("submit", async (event) => {
     return;
   }
 
-  const apiUrl = apiUrlInput.value.trim();
   const formData = new FormData();
   formData.append("file", file);
 
@@ -26,10 +26,10 @@ form.addEventListener("submit", async (event) => {
   setStatus("Uploading and running OCR...");
   outputEl.textContent = "";
 
-    const startedAt = performance.now();
+  const startedAt = performance.now();
 
-    try {
-    const response = await fetch(apiUrl, {
+  try {
+    const response = await fetch(OCR_API_PATH, {
       method: "POST",
       body: formData,
     });
