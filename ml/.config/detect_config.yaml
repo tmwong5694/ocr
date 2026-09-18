@@ -1,14 +1,12 @@
 # Vision-Language OCR Detection Configuration
 ocr_model:
-  # Model configuration - supports any HuggingFace vision-language model
+  # Model configuration - supports any HuggingFace vision-language model [deepseek-ai/DeepSeek-OCR-2/zai-org/GLM-OCR]
   model_name: "zai-org/GLM-OCR"
   # Device configuration: cpu, cuda, mps (Apple Silicon), auto (auto-detect if not specified)
-  device: "mps"
+  device: "auto"
   # Generation parameters
   max_tokens: 8192
   # Path to file for inference
-#  file_path: "ml/data/prescription/Training/training_words/0.png"
-#  file_path: "ml/samples/images/IMG_3290.jpg"
   file_path: "ml/samples/pdfs/gp_2025.10.20.pdf"
 
   preprocess:
