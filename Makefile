@@ -43,7 +43,7 @@ ocr:
 
 # Backend
 api-run:
-	cd backend && uv run uvicorn ocr_backend.main:app --host 0.0.0.0 --port 8000
+	uv run --package backend uvicorn ocr_backend.main:app --host 0.0.0.0 --port 8000
 
 api-dev:
 	cd backend && uv run uvicorn ocr_backend.main:app --reload --host 0.0.0.0 --port 8000
