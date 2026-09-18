@@ -21,6 +21,7 @@ dependencies = [
     "transformers>=4.40.0",
     "ultralytics>=8.0.0",
     "opencv-python>=4.8.0",
+    "accelerate>=1.15.0",
 ]
 
 [project.scripts]
