@@ -1,11 +1,13 @@
-.venv
 .git
 .idea
+.venv
 **/__pycache__
 **/*.pyc
 **/*.pyo
-**/*.pyd
 **/.DS_Store
 frontend/node_modules
 ml/outputs
 ml/experiments
+ml/data
+*.pt
+.env
