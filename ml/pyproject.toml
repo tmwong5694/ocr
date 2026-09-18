@@ -33,6 +33,15 @@ ml-clean = "ml_pipeline.clean_data:main"
 ml-label = "ml_pipeline.detect_animal:cli_main"
 ml-ocr = "ml_pipeline.extract_writing:cli_main"
 
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+torchvision = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
