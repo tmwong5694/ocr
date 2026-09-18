@@ -10,7 +10,7 @@ import shutil
 from pathlib import Path
 from ml_pipeline.ocr_model import OCRModel
 
-BASE_DIR = Path(__file__).resolve().parents[3]
+BASE_DIR = Path(__file__).resolve().parents[2]
 FRONTEND_DIR = BASE_DIR / "frontend"
 
 @asynccontextmanager

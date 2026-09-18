@@ -20,7 +20,7 @@ dependencies = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["backend_src/ocr_backend"]
+packages = ["ocr_backend"]
 
 [tool.uv.sources]
 ml_pipeline = { workspace = true }
