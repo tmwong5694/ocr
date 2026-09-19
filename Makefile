@@ -50,3 +50,8 @@ api-dev:
 
 api-test:
 	cd backend && uv run pytest
+
+
+# Frontend
+frontend-build:
+	cd frontend && npm run build
