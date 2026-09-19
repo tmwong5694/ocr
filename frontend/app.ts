@@ -4,7 +4,7 @@ const statusEl = document.querySelector<HTMLParagraphElement>("#status")!;
 const outputEl = document.querySelector<HTMLPreElement>("#output")!;
 const submitBtn = document.querySelector<HTMLButtonElement>("#submit-btn")!;
 
-const OCR_API_PATH = "/files/ocr";
+const OCR_API_PATH = "/api/files/ocr";
 
 const setStatus = (message: string) => {
   statusEl.textContent = message;
@@ -14,6 +14,7 @@ form.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const file = fileInput.files?.[0];
+
   if (!file) {
     setStatus("Choose a PDF first.");
     return;
@@ -43,15 +44,18 @@ form.addEventListener("submit", async (event) => {
           : "";
 
       throw new Error(
-        detail || `Request failed with status ${response.status} ${response.statusText}`,
+        detail ||
+          `Request failed with status ${response.status} ${response.statusText}`,
       );
     }
 
     const seconds = ((performance.now() - startedAt) / 1000).toFixed(2);
+
     setStatus(`It took ${seconds} seconds to complete extraction`);
     outputEl.textContent = JSON.stringify(payload, null, 2);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
+
     setStatus(`Error: ${message}`);
     outputEl.textContent = message;
   } finally {
