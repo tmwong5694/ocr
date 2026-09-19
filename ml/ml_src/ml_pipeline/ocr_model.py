@@ -1,16 +1,16 @@
+from io import BytesIO
 from pathlib import Path
-import fitz
+from typing import BinaryIO, Literal
+
+import pymupdf
 import torch
-from shared_utils.timer import timer
-from transformers import AutoProcessor, AutoModelForImageTextToText
-from typing import Literal
+from PIL import Image
 from loguru import logger
+from transformers import AutoProcessor, AutoModelForImageTextToText
+
 from ml_pipeline.utils.config import load_config
-from ml_pipeline.utils.image_preprocessing import (
-    resize_image_for_ocr,
-    estimate_attention_memory_usage,
-    get_image_dimensions,
-)
+from ml_pipeline.utils.image_preprocessing import estimate_attention_memory_usage
+
 
 # Load configuration from YAML
 _CONFIG_PATH = Path(__file__).parent.parent.parent / ".config" / "detect_config.yaml"
@@ -22,7 +22,7 @@ MODEL_NAME = _OCR_CONFIG.get("model_name", "zai-org/GLM-OCR")
 DEFAULT_IMAGE_PATH = _OCR_CONFIG.get("default_image_path", "ml/data/prescription/Training/training_words/0.png")
 MAX_TOKENS = _OCR_CONFIG.get("max_tokens", 8192)
 
-# Load prompt from text file (industry standard: separate content from config)
+
 def _load_default_prompt():
     """Load the OCR prompt from a dedicated text file."""
     prompt_path = Path(__file__).parent.parent.parent / ".config" / "ocr_prompt.txt"
@@ -33,6 +33,7 @@ def _load_default_prompt():
         logger.warning(f"Prompt file not found at {prompt_path}, using fallback")
         return "Recognize text in the image."
 
+
 DEFAULT_PROMPT = _load_default_prompt()
 
 # Auto-detect device if set to "auto"
@@ -40,21 +41,23 @@ DEVICE = _OCR_CONFIG.get("device", "auto")
 if DEVICE == "auto":
     DEVICE = "mps" if torch.backends.mps.is_available() else "cpu"
 
+ImageInput = str | Path | bytes | BinaryIO | Image.Image
+
 
 class OCRModel:
     """
     Flexible vision-language model for OCR and image-to-text tasks.
-    
+
     Supports any HuggingFace model that uses AutoProcessor and AutoModelForImageTextToText.
     Examples: GLM-OCR, Qwen-VL, LLaVA, etc.
-    
+
     Easy model switching via:
     1. Config file: update 'model_name' in detect_config.yaml
     2. Constructor: pass different model_name during instantiation
     3. Method parameter: specify model_name when calling recognize_text()
     4. switch_model() method: dynamically switch between models
     """
-    
+
     def __init__(
         self,
         model_name: str = MODEL_NAME,
@@ -81,18 +84,18 @@ class OCRModel:
         self.processor: AutoProcessor | None = None
         self.model: AutoModelForImageTextToText | None = None
 
-        # Image preprocessing configuration
         self.enable_preprocessing = enable_preprocessing
         preprocess_config = _OCR_CONFIG.get("preprocess", {})
         self.max_image_width = max_image_width or preprocess_config.get("max_width", 768)
         self.max_image_height = max_image_height or preprocess_config.get("max_height", 768)
         self.quality = preprocess_config.get("quality", 85)
-        
-        logger.debug(f"Initialized OCR model for: {self.model_name}")
-        logger.debug(f"Image preprocessing: {self.enable_preprocessing} "
-                     f"(max size: {self.max_image_width}x{self.max_image_height})")
 
-    # @timer
+        logger.debug(f"Initialized OCR model for: {self.model_name}")
+        logger.debug(
+            f"Image preprocessing: {self.enable_preprocessing} "
+            f"(max size: {self.max_image_width}x{self.max_image_height})"
+        )
+
     def load_model(self, model_name: str = None) -> None:
         """Load processor and model explicitly."""
         if model_name:
@@ -100,55 +103,47 @@ class OCRModel:
 
         logger.info(f"Loading model: {self.model_name}")
 
-        # Load processor
         logger.debug("Loading processor...")
         try:
-            self.processor = AutoProcessor.from_pretrained(self.model_name)
-            logger.debug(f"Processor loaded")
+            self.processor = AutoProcessor.from_pretrained(self.model_name, trust_remote_code=True)
+            logger.debug("Processor loaded")
         except Exception as e:
             logger.error(f"Failed to load processor: {e}")
             raise
 
-        # Load model
         logger.debug("Loading model weights...")
         try:
+            dtype = torch.float16 if self.device in {"cuda", "mps"} else torch.float32
             self.model = AutoModelForImageTextToText.from_pretrained(
                 pretrained_model_name_or_path=self.model_name,
-                dtype=torch.float16,
+                dtype=dtype,
                 device_map=self.device,
-                **self.model_kwargs
+                **self.model_kwargs,
             )
-            logger.debug(f"Model loaded")
+            logger.debug("Model loaded")
         except Exception as e:
             logger.error(f"Failed to load model: {e}")
             raise
 
         logger.info(f"Model loaded on device: {self.device}")
 
-
-    # @timer
     def image_to_text(
-            self,
-            image_path: str,
-            prompt: str = None,
-            model_name: str = None
+        self,
+        image: ImageInput,
+        prompt: str = "",
+        model_name: str = None,
     ) -> str:
         """
         Recognize text from an image using the current or specified model.
 
         Args:
-            image_path: Path to the image file
+            image: Path, bytes, file-like object, or PIL image
             prompt: Prompt for the model (defaults to config value)
             model_name: Switch to a different model for this inference
 
         Returns:
             Recognized text
-
-        Raises:
-            ValueError: If model is not loaded
-            FileNotFoundError: If image file does not exist
         """
-        # Switch model if requested
         if model_name and model_name != self.model_name:
             logger.info(f"Switching model from {self.model_name} to {model_name}")
             self.load_model(model_name)
@@ -159,34 +154,29 @@ class OCRModel:
                 "Example: ocr_model.load_model()"
             )
 
-        if prompt is None:
+        if prompt == "":
             prompt = DEFAULT_PROMPT
 
-        if not Path(image_path).exists():
-            raise FileNotFoundError(f"Image not found: {image_path}")
+        image_obj = self._load_image(image)
 
-        # Preprocess image if enabled
         if self.enable_preprocessing:
-            image_path = self._preprocess_image(image_path)
+            image_obj = self._preprocess_image(image_obj)
 
         messages = [
             {
                 "role": "user",
                 "content": [
-                    {"type": "image", "url": image_path},
-                    {"type": "text", "text": prompt}
+                    {"type": "image", "image": image_obj},
+                    {"type": "text", "text": prompt},
                 ],
             }
         ]
         inputs = self._prepare_inputs(messages)
-        output_text = self._generate(inputs)
-
-        return output_text
+        return self._generate(inputs)
 
     def check_contains_text(self, pdf_path: str):
-
         has_any_text = False
-        with fitz.open(pdf_path) as doc:
+        with pymupdf.open(pdf_path) as doc:
             for page in doc:
                 if page.get_text().strip():
                     has_any_text = True
@@ -194,24 +184,45 @@ class OCRModel:
 
         return has_any_text
 
-
     def extract_image(self, pdf_path: str):
-
         extracted = []
-        doc = fitz.open(pdf_path)
-        for page_idx, page in enumerate(doc):
-            for img_index, img in enumerate(doc.get_page_images(page_idx)):
-                xref = img[0]
-                image_data = doc.extract_image(xref)
+        with pymupdf.open(pdf_path) as doc:
+            for page_idx, _page in enumerate(doc):
+                for img_index, img in enumerate(doc.get_page_images(page_idx)):
+                    xref = img[0]
+                    image_data = doc.extract_image(xref)
+                    ext = image_data["ext"]
+                    out_path = Path(f"page{page_idx}_img{img_index}.{ext}")
 
-                with open(f"page{page_idx}_img{img_index}.{image_data["ext"]}", "wb") as writer:
-                    writer.write(image_data["image"])
+                    with open(out_path, "wb") as writer:
+                        writer.write(image_data["image"])
 
-                extracted.append(f"page{page_idx}_img{img_index}.{image_data['ext']}")
+                    extracted.append(str(out_path))
 
         return extracted
 
-    # @timer
+    def _load_image(self, image: ImageInput) -> Image.Image:
+        if isinstance(image, Image.Image):
+            return image.copy().convert("RGB")
+
+        if isinstance(image, (str, Path)):
+            with Image.open(image) as img:
+                return img.convert("RGB")
+
+        if isinstance(image, bytes):
+            with Image.open(BytesIO(image)) as img:
+                return img.convert("RGB")
+
+        if hasattr(image, "seek"):
+            try:
+                image.seek(0)
+            except Exception:
+                pass
+            with Image.open(image) as img:
+                return img.convert("RGB")
+
+        raise TypeError(f"Unsupported image input type: {type(image)!r}")
+
     def _prepare_inputs(self, messages: list) -> dict:
         """Prepare model inputs from messages."""
         try:
@@ -220,7 +231,7 @@ class OCRModel:
                 tokenize=True,
                 add_generation_prompt=True,
                 return_dict=True,
-                return_tensors="pt"
+                return_tensors="pt",
             ).to(self.model.device)
 
             inputs.pop("token_type_ids", None)
@@ -230,11 +241,10 @@ class OCRModel:
             logger.error(f"Failed to prepare inputs: {e}")
             raise
 
-    # @timer
     def _generate(self, inputs: dict, max_tokens: int = None) -> str:
         """
         Generate text from model.
-        
+
         Args:
             inputs: Prepared model inputs
             max_tokens: Override default max_tokens
@@ -244,59 +254,52 @@ class OCRModel:
             generated_ids = self.model.generate(**inputs, max_new_tokens=tokens)
             output_text = self.processor.decode(
                 generated_ids[0][inputs["input_ids"].shape[1]:],
-                skip_special_tokens=True
+                skip_special_tokens=True,
             )
             return output_text
         except Exception as e:
             logger.error(f"Generation failed: {e}")
             raise
 
-    # @timer
-    def _preprocess_image(self, image_path: str) -> str:
+    def _preprocess_image(self, image: Image.Image) -> Image.Image:
         """
         Preprocess image to reduce memory usage.
 
         Resizes large images while maintaining aspect ratio to prevent
         the attention mechanism from allocating excessive memory.
-
-        Args:
-            image_path: Path to the image file
-            
-        Returns:
-            Path to the preprocessed image (may be same as input if no resize needed)
         """
         try:
-            width, height = get_image_dimensions(image_path)
+            working = image.copy()
+            if working.mode != "RGB":
+                working = working.convert("RGB")
+
+            width, height = working.size
             memory_gb = estimate_attention_memory_usage(width, height)
 
             logger.info(f"Image dimensions: {width}x{height}")
             logger.info(f"Estimated attention memory: {memory_gb:.2f} GB")
 
-            # Check if resizing is needed
             if width > self.max_image_width or height > self.max_image_height:
                 logger.warning(
                     f"Image size ({width}x{height}) exceeds max ({self.max_image_width}x{self.max_image_height}). "
                     f"Resizing to reduce memory usage..."
                 )
-                
-                preprocessed_path = resize_image_for_ocr(
-                    image_path,
-                    max_width=self.max_image_width,
-                    max_height=self.max_image_height,
-                    quality=self.quality,
+
+                working.thumbnail(
+                    (self.max_image_width, self.max_image_height),
+                    Image.Resampling.LANCZOS,
                 )
-                
-                # Check memory of resized image
-                new_width, new_height = get_image_dimensions(preprocessed_path)
+
+                new_width, new_height = working.size
                 new_memory_gb = estimate_attention_memory_usage(new_width, new_height)
                 logger.info(f"After preprocessing: {new_width}x{new_height} (~{new_memory_gb:.2f} GB)")
 
-                return preprocessed_path
             else:
                 logger.debug(f"Image size is acceptable ({width}x{height})")
-                return image_path
+
+            return working
 
         except Exception as e:
             logger.error(f"Image preprocessing failed: {e}")
             logger.warning("Attempting to use original image anyway...")
-            return image_path
+            return image

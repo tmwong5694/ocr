@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OCR Frontend</title>
+<link rel="stylesheet" href="/static/styles.css" />
+<script type="module" src="/static/app.js"></script>
+  </head>
+  <body>
+    <main class="app">
+      <section class="card">
+        <h1>Medical Certificate OCR Upload</h1>
+        <p class="subtitle">Upload a medical certificate to extract required values. Only PDF format is supported.</p>
+        <p class="subtitle">It will take 3-5+ min to extract values.</p>
+
+        <form id="upload-form" class="form">
+          <label class="field">
+            <span>File</span>
+            <input id="file-input" type="file" accept=".pdf,application/pdf" />
+          </label>
+
+          <button id="submit-btn" type="submit">Run OCR</button>
+        </form>
+
+        <p id="status" class="status">Waiting for a file…</p>
+        <pre id="output" class="output"></pre>
+      </section>
+    </main>
+  </body>
+</html>
