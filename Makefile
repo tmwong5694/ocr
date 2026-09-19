@@ -60,11 +60,11 @@ api-test:
 
 # Frontend
 frontend-build:
-	cd frontend && npm run build
+	cd frontend && npm install && npm run build
 
 # Docker
-docker-up:
-	docker compose up -d
+docker-up: frontend-build
+	docker compose up -d --build
 
 docker-stop:
 	docker compose stop
@@ -72,7 +72,7 @@ docker-stop:
 docker-down:
 	docker compose down
 
-docker-build:
+docker-build: frontend-build
 	docker compose build
 
 docker-logs:
@@ -80,5 +80,4 @@ docker-logs:
 
 update:
 	git pull
-	$(MAKE) frontend-build
-	docker compose up -d --build
+	$(MAKE) docker-up
