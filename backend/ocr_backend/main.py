@@ -101,6 +101,10 @@ async def _extract_ocr(file: UploadFile, request: Request):
 async def root():
     return FileResponse(FRONTEND_DIR / "index.html")
 
+@app.get("/health")
+async def health():
+    return {"status": "healthy"}
+
 @app.post("/analyze_file/", tags=["files"])
 async def analyze_file(file: UploadFile, request: Request):
     return await _analyze_file_stat(file, request)
