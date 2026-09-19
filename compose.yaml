@@ -9,18 +9,6 @@ services:
       PYTHONDONTWRITEBYTECODE: "1"
       PYTHONUNBUFFERED: "1"
       HF_TOKEN: ${HF_TOKEN}
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "python",
-          "-c",
-          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')",
-        ]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 180s
     restart: unless-stopped
 
   frontend:
@@ -29,7 +17,4 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:80"
-    depends_on:
-      backend:
-        condition: service_healthy
     restart: unless-stopped
